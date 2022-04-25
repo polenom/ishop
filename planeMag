@@ -1,0 +1,89 @@
+Описане моделей
+
+city
+    cityName = CharField
+
+client
+    client oto > user PK
+    clientPhoto = FileField
+    clientName = CharField
+    clientSecondName = CharFeild
+    clientBirthday = DateTimeField
+    clientEmail = EmailField
+    slug = SlugField
+    clientCountry fk > table country
+    clientAddress  CharFeild
+
+buy
+    buyClient fk > table client
+    buyDescription = CharField
+
+step
+    stepName = CharField
+
+buy_step
+    buystepBuy fk > table buy
+    buystepStep fk > table step
+    buystepDatestart DateTimeField
+    buystepDatefinish DateTimeField
+
+category
+    categoryName = CharField
+
+buy_product
+    buyproductBuy fk > table buy
+    buyproductCategoryname fk > table category
+    buyproductBook fk > books
+    buyproductMotorOil fk > motoroils
+    buyproductProduct fk > table product
+    buyproductCount IntegerField
+
+author
+    authorName = CharField
+
+genre
+    genreName CharField
+
+books
+    bookTitle CharField
+    bookDiscription  CharField
+    bookAuthor fk > author
+    bookGenre fk > genre
+    bookPrice InterField
+    bookCount InterField
+    bookSlug SlugField
+
+oilproducer
+    oilproducerName CharField
+
+motoroils
+    motoroilTitle  CharField
+    motoroilDescription CharField
+    motoroilProducer fk > oilproducer
+    motoroilPrice InterField
+    motoroilCount InterField
+    motoroilSlug SlugField
+
+motoroilvolume
+    motoroil fk > motoroils
+    motoroilSize InterField
+
+
+
+Pages
+    /
+        Главная страница(
+        поиск регистрация авторизация
+        категории)
+
+    /product/add
+
+    /slug: username/add
+        добавить товар
+
+    /slug: username/profile
+        Изменить информацию в профиле
+
+    delete/pk: order number
+
+    /product/add
