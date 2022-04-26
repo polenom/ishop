@@ -14,6 +14,7 @@ client
     clientCountry fk > table country
     clientAddress  CharFeild
 
+
 buy
     buyClient fk > table client
     buyDescription = CharField
@@ -29,12 +30,14 @@ buy_step
 
 category
     categoryName = CharField
+    categorySlug SlugField
+
+product
+    productCategory fk > category
 
 buy_product
     buyproductBuy fk > table buy
-    buyproductCategoryname fk > table category
-    buyproductBook fk > books
-    buyproductMotorOil fk > motoroils
+    buyproductProduct fk> product
     buyproductProduct fk > table product
     buyproductCount IntegerField
 
@@ -45,6 +48,7 @@ genre
     genreName CharField
 
 books
+    bookProduct oto > product
     bookTitle CharField
     bookDiscription  CharField
     bookAuthor fk > author
@@ -57,6 +61,7 @@ oilproducer
     oilproducerName CharField
 
 motoroils
+    motoroilProduct oto > product
     motoroilTitle  CharField
     motoroilDescription CharField
     motoroilProducer fk > oilproducer
@@ -76,14 +81,32 @@ Pages
         поиск регистрация авторизация
         категории)
 
-    /product/add
+    /slug: категория/
+        выводит товора для категории
+        поиск регистрация атризация
+        фильтры
 
-    /slug: username/add
+    /slug: категория/slug: название товара
+        вывод информации по товару
+        поиск регистрация атризация
+        купить
+
+    /slug: категория/slug: название товара/buy
+        оформление заказа
+
+    /addproduct/
         добавить товар
 
     /slug: username/profile
         Изменить информацию в профиле
+        посмотреть заказы и статус
 
-    delete/pk: order number
+    delete/position/ ???
+        удаление позиции
 
-    /product/add
+    delete/order/pk: номер заказа
+        удаление всего заказа
+
+
+
+
