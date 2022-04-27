@@ -1,4 +1,4 @@
-Описане моделей
+писане моделей
 
 city
     cityName = CharField
@@ -38,7 +38,6 @@ product
 buy_product
     buyproductBuy fk > table buy
     buyproductProduct fk> product
-    buyproductProduct fk > table product
     buyproductCount IntegerField
 
 author
@@ -72,6 +71,7 @@ motoroils
 motoroilvolume
     motoroil fk > motoroils
     motoroilSize InterField
+
 
 
 
