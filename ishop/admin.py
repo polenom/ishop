@@ -32,7 +32,7 @@ class Buy_step_admin(admin.ModelAdmin):
 
 
 class Buy_admin(admin.ModelAdmin):
-    list_display = ('buyClient', 'buyDescription')
+    list_display = ('id','buyClient', 'buyDescription')
     list_display_links = ('buyClient', 'buyDescription')
     search_fields = ('buyClient__clientUser__username',)
     ordering = ('-pk',)
@@ -48,17 +48,56 @@ class Buy_admin(admin.ModelAdmin):
             super(Buy_admin, self).save_model(request, obj, form, change)
 
 
+class Genre_admin(admin.ModelAdmin):
+    list_display = ('id', 'genreName')
+    search_fields = ('genreName',)
+
+
+class Author_admin(admin.ModelAdmin):
+    list_display = ('id', 'authorName')
+    search_fields = ('authorName',)
+
+
+class Category_admin(admin.ModelAdmin):
+    list_display = ('id', 'categoryName')
+    search_fields = ('categoryName',)
+
+
+class Product_admin(admin.ModelAdmin):
+    list_display = ('id', 'product')
+    search_fields = ('product',)
+
+
+class Books_admin(admin.ModelAdmin):
+    list_display = ('booksProduct','booksTitle','booksDiscription','booksCount')
+    list_display_links = ('booksProduct','booksTitle','booksDiscription','booksCount')
+    exclude = ('booksProduct','booksSlug')
+
+    def save_model(self, request, obj, form, change):
+        if change == False:
+            produd = Product.objects.create(product = Category.objects.get(categoryName='books'))
+            new_book = form.save(commit=False)
+            new_book.booksProduct = produd
+            new_book.save()
+        else:
+            super(Books_admin, self).save_model(request, obj, form, change)
+
+
+class Buy_product_admin(admin.ModelAdmin):
+    list_display = ('buyproductProduct','buyproductBuy',  'buyproductCount')
+
+
 admin.site.register(City)
 admin.site.register(Client)
 admin.site.register(Buy, Buy_admin)
 admin.site.register(Step)
 admin.site.register(Buy_step, Buy_step_admin)
-admin.site.register(Category)
-admin.site.register(Product)
-admin.site.register(Buy_product)
-admin.site.register(Author)
-admin.site.register(Genre)
-admin.site.register(Books)
+admin.site.register(Category,Category_admin)
+
+admin.site.register(Buy_product, Buy_product_admin)
+admin.site.register(Author,Author_admin)
+admin.site.register(Genre,Genre_admin)
+admin.site.register(Books,Books_admin)
 admin.site.register(Oilproducer)
 admin.site.register(Motoroils)
 admin.site.register(Motoroilsvolums)
