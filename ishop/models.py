@@ -7,7 +7,7 @@ from django.template.defaultfilters import slugify
 
 def userPhotoPath(instance, filename):
     date = datetime.now()
-    return f'static/Photo/{date.year}/{date.month}/{date.day}/username_{instance.userProfile}_id_{instance.userProfile.id}_{datetime.now()}.{filename.split(".")[1]}'
+    return f'static/Photo/{date.year}/{date.month}/{date.day}/username_{instance.clientUser.username}_id_{instance.clientUser.id}_{datetime.now()}.{filename.split(".")[1]}'
 
 
 # Create your models here.
@@ -70,12 +70,13 @@ class Category(models.Model):
         verbose_name = 'Category'
         verbose_name_plural = 'Categorys'
 
+
 class Product(models.Model):
     product = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, verbose_name='product',
                                 related_name='product')
 
     def __str__(self):
-        return str(self.product)
+        return str(self.commodity.booksTitle)
 
     class Meta:
         verbose_name = 'Product'
@@ -83,14 +84,17 @@ class Product(models.Model):
 
 
 class Buy_product(models.Model):
-    buyproductBuy = models.ForeignKey(Buy, on_delete=models.CASCADE, verbose_name='buyproductBuy',
+    buyproductBuy = models.ForeignKey(Buy, on_delete=models.CASCADE, verbose_name='Number order',
                                       related_name='buyproduct')
     buyproductProduct = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, verbose_name='buyproduct',
                                           related_name='buyproduct')
-    buyproductCount = models.IntegerField(default=1)
+    buyproductCount = models.IntegerField(default=1, verbose_name='Count')
 
     def __str__(self):
         return str(self.buyproductProduct)
+
+    def title(self):
+        return self.buyproductProduct.commodity.booksTitle
 
     class Meta:
         verbose_name = 'Buy_product'
@@ -112,7 +116,7 @@ class Genre(models.Model):
     genreName = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
-        return  self.genreName
+        return self.genreName
 
     class Meta:
         verbose_name = 'Genre'
@@ -120,7 +124,8 @@ class Genre(models.Model):
 
 
 class Books(models.Model):
-    booksProduct = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='book', primary_key=True, editable=False)
+    booksProduct = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='commodity', primary_key=True,
+                                        editable=False)
     booksTitle = models.CharField(max_length=100)
     booksDiscription = models.CharField(max_length=300, default='')
     booksAuthor = models.ForeignKey(Author, on_delete=models.SET_NULL, null=True, related_name='books',
@@ -128,9 +133,7 @@ class Books(models.Model):
     booksGenre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, verbose_name='books')
     booksPrice = models.FloatField()
     booksCount = models.IntegerField()
-    booksSlug = models.SlugField(unique=True, null=True,blank=True)
-
-
+    booksSlug = models.SlugField(unique=True, null=True, blank=True)
 
     def __str__(self):
         return self.booksTitle
@@ -139,7 +142,6 @@ class Books(models.Model):
         if not self.booksSlug:
             self.booksSlug = slugify(self.booksTitle)
         return super().save(force_insert=False, force_update=False, using=None, update_fields=None)
-
 
     class Meta:
         verbose_name = 'Book'

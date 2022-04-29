@@ -1,8 +1,39 @@
 from datetime import datetime
 
 from django.contrib import admin
+from django.contrib.admin import AdminSite, sites
+
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
     Oilproducer, Motoroils, Motoroilsvolums
+
+
+class EventAdminSite(AdminSite):
+    def get_app_list(self, request):
+        ordering = {
+            'Clients': 1,
+            'Citys': 2,
+            'Buys': 3,
+            'Steps': 4,
+            'Buy_steps': 5,
+            'Buy_products': 6,
+            'Categorys': 7,
+            'Books': 8,
+            'Authors': 9,
+            'Genres': 10,
+            'Motoroilss': 11,
+            'Oilproducers': 12,
+            'Motoroilsvolumss': 13
+
+        }
+        app_dict = super().get_app_list(request)
+        print(app_dict[1]['models'], '111111111111111111')
+        app_dict[1]['models'].sort(key=lambda x: ordering[x['name']])
+        return app_dict
+
+
+mysite = EventAdminSite()
+admin.site = mysite
+sites.site = mysite
 
 
 @admin.action(description='add_data_start')
@@ -32,7 +63,7 @@ class Buy_step_admin(admin.ModelAdmin):
 
 
 class Buy_admin(admin.ModelAdmin):
-    list_display = ('id','buyClient', 'buyDescription')
+    list_display = ('id', 'buyClient', 'buyDescription')
     list_display_links = ('buyClient', 'buyDescription')
     search_fields = ('buyClient__clientUser__username',)
     ordering = ('-pk',)
@@ -69,13 +100,14 @@ class Product_admin(admin.ModelAdmin):
 
 
 class Books_admin(admin.ModelAdmin):
-    list_display = ('booksProduct','booksTitle','booksDiscription','booksCount')
-    list_display_links = ('booksProduct','booksTitle','booksDiscription','booksCount')
-    exclude = ('booksProduct','booksSlug')
+    list_display = ('booksProduct', 'booksTitle', 'booksDiscription', 'booksCount', 'booksPrice')
+    list_display_links = ('booksProduct', 'booksTitle', 'booksDiscription', 'booksCount')
+    exclude = ('booksProduct', 'booksSlug')
+    list_filter = ('booksCount', 'booksPrice')
 
     def save_model(self, request, obj, form, change):
         if change == False:
-            produd = Product.objects.create(product = Category.objects.get(categoryName='books'))
+            produd = Product.objects.create(product=Category.objects.get(categoryName='books'))
             new_book = form.save(commit=False)
             new_book.booksProduct = produd
             new_book.save()
@@ -84,20 +116,32 @@ class Books_admin(admin.ModelAdmin):
 
 
 class Buy_product_admin(admin.ModelAdmin):
-    list_display = ('buyproductProduct','buyproductBuy',  'buyproductCount')
+    list_display = ('title', 'buyproductBuy', 'buyproductCount')
 
 
-admin.site.register(City)
-admin.site.register(Client)
+class Client_admin(admin.ModelAdmin):
+    list_display = ('clientUser', 'clientName','clientSecondname', 'clientCountry','clientBirthday')
+    list_display_links = ('clientUser', 'clientName','clientSecondname',  'clientCountry','clientBirthday')
+    search_fields = ('clientUser__username','clientName')
+    ordering = ('-pk',)
+    list_filter = ('clientCountry','clientBirthday')
+
+
+class City_admin(admin.ModelAdmin):
+    search_fields = ('cityName',)
+
+
+admin.site.register(City, City_admin)
+admin.site.register(Client, Client_admin)
 admin.site.register(Buy, Buy_admin)
 admin.site.register(Step)
 admin.site.register(Buy_step, Buy_step_admin)
-admin.site.register(Category,Category_admin)
+admin.site.register(Category, Category_admin)
 
 admin.site.register(Buy_product, Buy_product_admin)
-admin.site.register(Author,Author_admin)
-admin.site.register(Genre,Genre_admin)
-admin.site.register(Books,Books_admin)
+admin.site.register(Author, Author_admin)
+admin.site.register(Genre, Genre_admin)
+admin.site.register(Books, Books_admin)
 admin.site.register(Oilproducer)
 admin.site.register(Motoroils)
 admin.site.register(Motoroilsvolums)
