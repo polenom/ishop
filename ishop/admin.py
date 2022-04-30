@@ -26,7 +26,6 @@ class EventAdminSite(AdminSite):
 
         }
         app_dict = super().get_app_list(request)
-        print(app_dict[1]['models'], '111111111111111111')
         app_dict[1]['models'].sort(key=lambda x: ordering[x['name']])
         return app_dict
 
@@ -120,15 +119,42 @@ class Buy_product_admin(admin.ModelAdmin):
 
 
 class Client_admin(admin.ModelAdmin):
-    list_display = ('clientUser', 'clientName','clientSecondname', 'clientCountry','clientBirthday')
-    list_display_links = ('clientUser', 'clientName','clientSecondname',  'clientCountry','clientBirthday')
-    search_fields = ('clientUser__username','clientName')
+    list_display = ('clientUser', 'clientName', 'clientSecondname', 'clientCountry', 'clientBirthday')
+    list_display_links = ('clientUser', 'clientName', 'clientSecondname', 'clientCountry', 'clientBirthday')
+    search_fields = ('clientUser__username', 'clientName')
     ordering = ('-pk',)
-    list_filter = ('clientCountry','clientBirthday')
+    list_filter = ('clientCountry', 'clientBirthday')
 
 
 class City_admin(admin.ModelAdmin):
     search_fields = ('cityName',)
+
+
+class Oil_producer_admin(admin.ModelAdmin):
+    search_fields = ('oilproducer',)
+
+class Motor_oil_admin(admin.ModelAdmin):
+    list_display = ('producer', 'motoroilsTitle', 'volums')
+    list_display_links = ('producer', 'motoroilsTitle', )
+    search_fields = ('motoroilsTitle',)
+
+class Oil_volums_admin(admin.ModelAdmin):
+    list_display = ('motoroilsvolums', 'motoroilsvolumsVolums', 'motoroilsvolumsPrice', 'motoroilsvolumsCount')
+    list_display_links = ('motoroilsvolums', 'motoroilsvolumsVolums', 'motoroilsvolumsPrice', 'motoroilsvolumsCount')
+    search_fields = ('motoroilsvolums', )
+
+# class Motor_oil_vol_admin(admin.ModelAdmin):
+#     list_display = ('motoroilsvolumsPrice', 'motoroilsTitle','volums', '')
+#     list_display_links = ('producer', 'motoroilsTitle','volums')
+#     search_fields = ('motoroilsTitle',)
+#
+#
+#
+# class Motoroilsvolums(models.Model):
+#     motoroilsvolums = models.ForeignKey(Motoroils, on_delete=models.CASCADE, related_name='oilvolume')
+#     motoroilsvolumsPrice = models.FloatField()
+#     motoroilsvolumsCount = models.IntegerField()
+#     motoroilsvolumsVolums = models.FloatField()
 
 
 admin.site.register(City, City_admin)
@@ -142,8 +168,8 @@ admin.site.register(Buy_product, Buy_product_admin)
 admin.site.register(Author, Author_admin)
 admin.site.register(Genre, Genre_admin)
 admin.site.register(Books, Books_admin)
-admin.site.register(Oilproducer)
-admin.site.register(Motoroils)
-admin.site.register(Motoroilsvolums)
+admin.site.register(Oilproducer, Oil_producer_admin)
+admin.site.register(Motoroils, Motor_oil_admin)
+admin.site.register(Motoroilsvolums, Oil_volums_admin)
 
 # Register your models here.

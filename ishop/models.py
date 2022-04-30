@@ -9,6 +9,13 @@ def userPhotoPath(instance, filename):
     date = datetime.now()
     return f'static/Photo/{date.year}/{date.month}/{date.day}/username_{instance.clientUser.username}_id_{instance.clientUser.id}_{datetime.now()}.{filename.split(".")[1]}'
 
+def bookPhoto(instance, filename):
+    date = datetime.now()
+    return f'static/Photo/{date.year}/{date.month}/{date.day}/book_{instance.booksTitle}.{filename.split(".")[1]}'
+
+def oilPhoto(instance, filename):
+    date = datetime.now()
+    return f'static/Photo/{date.year}/{date.month}/{date.day}/book_{instance.booksPhoto}.{filename.split(".")[1]}'
 
 # Create your models here.
 class City(models.Model):
@@ -126,6 +133,7 @@ class Genre(models.Model):
 class Books(models.Model):
     booksProduct = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='commodity', primary_key=True,
                                         editable=False)
+    booksPhoto = models.FileField(upload_to=oilPhoto, blank=True, default='', verbose_name='photo', null=True)
     booksTitle = models.CharField(max_length=100)
     booksDiscription = models.CharField(max_length=300, default='')
     booksAuthor = models.ForeignKey(Author, on_delete=models.SET_NULL, null=True, related_name='books',
@@ -151,11 +159,32 @@ class Books(models.Model):
 class Oilproducer(models.Model):
     oilproducer = models.CharField(max_length=50)
 
+    def __str__(self):
+        return  self.oilproducer
+
 
 class Motoroils(models.Model):
     motoroilsProducer = models.ForeignKey(Oilproducer, on_delete=models.SET_NULL, null=True, related_name='oil')
+    motoroilsPhoto = models.FileField(upload_to=bookPhoto, blank=True, default='', verbose_name='photo', null=True)
     motoroilsTitle = models.CharField(max_length=200, default='')
+    motoroilsDescription = models.CharField(max_length=200, default='')
     motoroilsSlug = models.SlugField(unique=True)
+
+    def producer(self):
+        return self.motoroilsProducer
+
+    def volums(self):
+        if self.oilvolume:
+            res = ''
+            for i in  self.oilvolume.all():
+
+                res+= ' v' + str(i.motoroilsvolumsVolums)
+            return res
+        else:
+            return ''
+
+    def __str__(self):
+        return self.motoroilsTitle
 
 
 class Motoroilsvolums(models.Model):
@@ -163,3 +192,6 @@ class Motoroilsvolums(models.Model):
     motoroilsvolumsPrice = models.FloatField()
     motoroilsvolumsCount = models.IntegerField()
     motoroilsvolumsVolums = models.FloatField()
+
+    def __str__(self):
+        return str(self.motoroilsvolums.motoroilsTitle)

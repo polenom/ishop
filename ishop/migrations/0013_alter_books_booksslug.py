@@ -2,6 +2,14 @@
 
 from django.db import migrations, models
 
+def step(apps, schema_editor):
+    types = ['delivery', 'transporation', 'packege', 'payment']
+
+    stepTypes = apps.get_model('ishop','Step')
+    print(123333333)
+    for i in types:
+        st = stepTypes(stepName=i)
+        st.save()
 
 class Migration(migrations.Migration):
 
@@ -15,4 +23,5 @@ class Migration(migrations.Migration):
             name='booksSlug',
             field=models.SlugField(null=True, unique=True),
         ),
+        migrations.RunPython(step)
     ]
