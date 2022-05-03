@@ -143,18 +143,7 @@ class Oil_volums_admin(admin.ModelAdmin):
     list_display_links = ('motoroilsvolums', 'motoroilsvolumsVolums', 'motoroilsvolumsPrice', 'motoroilsvolumsCount')
     search_fields = ('motoroilsvolums', )
 
-# class Motor_oil_vol_admin(admin.ModelAdmin):
-#     list_display = ('motoroilsvolumsPrice', 'motoroilsTitle','volums', '')
-#     list_display_links = ('producer', 'motoroilsTitle','volums')
-#     search_fields = ('motoroilsTitle',)
-#
-#
-#
-# class Motoroilsvolums(models.Model):
-#     motoroilsvolums = models.ForeignKey(Motoroils, on_delete=models.CASCADE, related_name='oilvolume')
-#     motoroilsvolumsPrice = models.FloatField()
-#     motoroilsvolumsCount = models.IntegerField()
-#     motoroilsvolumsVolums = models.FloatField()
+
 
 
 admin.site.register(City, City_admin)
