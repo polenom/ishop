@@ -29,11 +29,15 @@ class Command(BaseCommand):
                 for oil in listHtml.findAll('div', 'prod__in'):
                     listName = oil.a.text.split()
                     oilname = listName[2] if listName[0] in ['Моторное', 'моторное', 'Масло', 'масло'] else listName[0]
-                    oilVolum = listName[-1]
+                    oilVolum = listName[-1] if '(' not in listName[-1] else listName[-2]
                     oilnameProduct = ' '.join(listName[2:-1]) if listName[0] in ['Моторное', 'моторное', 'Масло',
                                                                                  'масло'] else ' '.join(listName[2:-1])
                     oildesc = oil.p.text
-                    oilPrice = oil.find('span', 'money__val').text
+                    try:
+                        oilPrice = oil.find('span', 'money__val').text
+                    except AttributeError:
+                        oilPrice = '0'
+
                     oilImage = oil.img['src']
                     if oilname not in cacheOilProducer:
                         try:
@@ -47,7 +51,7 @@ class Command(BaseCommand):
                         getOIlprod = Oilproducer.objects.get(oilproducer=oilname)
                         name, _ = urlretrieve(oilImage)
                         getOIL = Motoroils.objects.create(
-                            motoroilsProduct=Product.objects.create(product=Category.objects.get(categoryName='books')),
+                            prod=Product.objects.create(product=Category.objects.get(categoryName='oils')),
                             motoroilsProducer=getOIlprod,
                             motoroilsPhoto=File(open(name, 'rb'), name=oilImage.split('/')[-1]),
                             motoroilsTitle=oilnameProduct,
@@ -63,6 +67,7 @@ class Command(BaseCommand):
                         )
 
                     addInModelsProduct += 1
+                    print('k', addInModelsProduct)
                     if addInModelsProduct >= countPosition:
                         break
         if options.get('bb'):
@@ -97,22 +102,22 @@ class Command(BaseCommand):
                     if not Books.objects.filter(booksTitle=bookTitle):
                         name, _ = urlretrieve(bookImage)
                         newBook = Books.objects.create(
-                            booksProduct=Product.objects.create(product=Category.objects.get(categoryName='books')),
+                            prod=Product.objects.create(product=Category.objects.get(categoryName='books')),
                             booksPhoto = File(open(name,'rb'), name=bookImage.split('/')[-1]),
-                            booksTitle=bookTitle,
-                            booksDiscription=bookDisc,
+                            booksTitle=bookTitle[:100],
+                            booksDiscription=bookDisc[:1700],
                             booksAuthor=bookAuthor,
                             booksGenre=booksGenre,
                             booksPrice=float(bookPrice.replace(',','.').split()[0]),
                             booksCount=bookCount,
-                            booksSlug=bookTitle.replace(' ',''),
+                            # booksSlug=bookTitle.replace(' ',''),
                         )
 
-
+                    print(addInModelsProduct)
                     addInModelsProduct += 1
                     if addInModelsProduct >= countPosition:
                         break
-                    page += 1
+                params['p']+=1
 
         # print(options['count'],777777777777777777777)
         # print(options['k1'],1)

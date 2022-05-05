@@ -30,9 +30,9 @@ class EventAdminSite(AdminSite):
         return app_dict
 
 
-mysite = EventAdminSite()
-admin.site = mysite
-sites.site = mysite
+# mysite = EventAdminSite()
+# admin.site = mysite
+# sites.site = mysite
 
 
 @admin.action(description='add_data_start')
@@ -99,16 +99,17 @@ class Product_admin(admin.ModelAdmin):
 
 
 class Books_admin(admin.ModelAdmin):
-    list_display = ('booksProduct', 'booksTitle', 'booksDiscription', 'booksCount', 'booksPrice')
-    list_display_links = ('booksProduct', 'booksTitle', 'booksDiscription', 'booksCount')
-    exclude = ('booksProduct', 'booksSlug')
+    list_display = ('booksGenre', 'booksTitle',  'booksCount', 'booksPrice')
+    list_display_links = ('booksGenre', 'booksTitle', 'booksCount')
+    search_fields = ('booksTitle','booksGenre','booksAuthor')
+    exclude = ('prod',)
     list_filter = ('booksCount', 'booksPrice')
 
     def save_model(self, request, obj, form, change):
         if change == False:
             produd = Product.objects.create(product=Category.objects.get(categoryName='books'))
             new_book = form.save(commit=False)
-            new_book.booksProduct = produd
+            new_book.prod = produd
             new_book.save()
         else:
             super(Books_admin, self).save_model(request, obj, form, change)

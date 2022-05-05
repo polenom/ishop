@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 
 from django.contrib.auth.models import User
@@ -83,7 +84,10 @@ class Product(models.Model):
                                 related_name='product')
 
     def __str__(self):
-        return str(self.commodity.booksTitle)
+        if self.product.categoryName == 'books':
+            return str(self.books.booksTitle)
+        else:
+            return str(self.motoroils.motoroilsTitle)
 
     class Meta:
         verbose_name = 'Product'
@@ -101,7 +105,7 @@ class Buy_product(models.Model):
         return str(self.buyproductProduct)
 
     def title(self):
-        return self.buyproductProduct.commodity.booksTitle
+        return self.buyproductProduct.books.booksTitle
 
     class Meta:
         verbose_name = 'Buy_product'
@@ -109,7 +113,7 @@ class Buy_product(models.Model):
 
 
 class Author(models.Model):
-    authorName = models.CharField(max_length=50, unique=True)
+    authorName = models.CharField(max_length=150, unique=True)
 
     def __str__(self):
         return self.authorName
@@ -120,7 +124,7 @@ class Author(models.Model):
 
 
 class Genre(models.Model):
-    genreName = models.CharField(max_length=60, unique=True)
+    genreName = models.CharField(max_length=160, unique=True)
 
     def __str__(self):
         return self.genreName
@@ -131,11 +135,10 @@ class Genre(models.Model):
 
 
 class Books(models.Model):
-    booksProduct = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='commodity', primary_key=True,
-                                        editable=False)
+    prod = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='books',primary_key=True)
     booksPhoto = models.FileField(upload_to=bookPhoto, blank=True, default='', verbose_name='photo', null=True)
     booksTitle = models.CharField(max_length=100)
-    booksDiscription = models.CharField(max_length=700, default='')
+    booksDiscription = models.CharField(max_length=1700, default='')
     booksAuthor = models.ForeignKey(Author, on_delete=models.SET_NULL, null=True, related_name='books',
                                     verbose_name='author')
     booksGenre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, verbose_name='books')
@@ -148,7 +151,9 @@ class Books(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.booksSlug:
-            self.booksSlug = slugify(self.booksTitle)
+            self.booksSlug = self.booksTitle[:20]
+            if Books.objects.filter(booksSlug=self.booksSlug):
+                self.booksSlug = self.booksSlug[:18]+str(random.randrange(100))
         return super().save(force_insert=False, force_update=False, using=None, update_fields=None)
 
     class Meta:
@@ -164,8 +169,7 @@ class Oilproducer(models.Model):
 
 
 class Motoroils(models.Model):
-    motoroilsProduct = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='commoditty', primary_key=True,
-                                        editable=False)
+    prod = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='motoroils',primary_key=True)
     motoroilsProducer = models.ForeignKey(Oilproducer, on_delete=models.SET_NULL, null=True, related_name='oil')
     motoroilsPhoto = models.FileField(upload_to=oilPhoto, blank=True, default='', verbose_name='photo', null=True)
     motoroilsTitle = models.CharField(max_length=200, default='')
