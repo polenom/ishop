@@ -24,11 +24,19 @@
             {% endfor %}
 
             </ul>
-            <ul class="navbar-nav  mb-2 mb-lg-0">
+            {% if request.user.is_authenticated %}
+                <ul class="navbar-nav  mb-2 mb-lg-0">
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="/">Sing up</a>
+                  <a class="nav-link active" aria-current="page" href="{% url 'login' %}">{{request.user.username}}</a>
                 </li>
             </ul>
+            {% else %}
+            <ul class="navbar-nav  mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="{% url 'login' %}">Sing up</a>
+                </li>
+            </ul>
+            {% endif%}
                 <form class="d-flex" action="/" method="post">
                     {% csrf_token %}
                     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">

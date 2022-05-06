@@ -26,13 +26,16 @@ class EventAdminSite(AdminSite):
 
         }
         app_dict = super().get_app_list(request)
-        app_dict[1]['models'].sort(key=lambda x: ordering[x['name']])
+        try:
+            app_dict[1]['models'].sort(key=lambda x: ordering[x['name']])
+        except IndexError:
+            pass
         return app_dict
 
 
-# mysite = EventAdminSite()
-# admin.site = mysite
-# sites.site = mysite
+mysite = EventAdminSite()
+admin.site = mysite
+sites.site = mysite
 
 
 @admin.action(description='add_data_start')

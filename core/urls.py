@@ -22,7 +22,9 @@ admin.site.index_title = "Welcome to ISHOP"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include('ishop.urls'))
+    path('',include('ishop.urls')),
+    path('oauth/', include('social_django.urls', namespace='social')),
+
 ]
 
 
