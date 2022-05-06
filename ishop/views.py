@@ -1,5 +1,6 @@
 from operator import attrgetter
 
+from django.contrib import messages
 from django.contrib.auth import login
 from django.shortcuts import render, HttpResponse, redirect
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
@@ -40,13 +41,10 @@ def startpage(request):
 def loginPage(request):
     if request.method == "POST":
         authform = UserAuthForm(data=request.POST)
-        print(123)
-        print(request.POST)
-        print(authform.is_valid())
         if authform.is_valid():
             user = authform.get_user()
-            print(user)
             login(request,user)
+            messages.success(request, f', {user.username}, you are logged in')
             return redirect('/')
     category = Category.objects.values_list('categoryName', flat=True)
     authform = UserAuthForm()
@@ -54,11 +52,34 @@ def loginPage(request):
 
 
 def registerPage(request):
-    return HttpResponse('register')
+    if request.method == 'POST':
+        regform = UserRegForm(request.POST)
+        if regform.is_valid():
+            user = regform.save()
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            messages.success(request,f', {user.username}, you are registered ')
+            return redirect('/')
+    else:
+        regform = UserRegForm()
+    category = Category.objects.values_list('categoryName', flat=True)
+    param = {
+        'regform':regform,
+        'category':category,
+    }
+    return render(request, 'registration.html', param )
 
 
 def pagecategory(request, category):
-    return HttpResponse('Ok')
+    cats = Category.objects.values_list('categoryName', flat=True)
+
+    if category == 'books':
+        books = Books.objects.all().order_by('-prod_id')
+        param = {
+            'cats': cats,
+            'books':books
+        }
+        return render(request, 'books.html', param)
+    return HttpResponse('books')
 
 
 def test(request):

@@ -4,7 +4,7 @@ from .views import test, startpage, pagecategory, loginPage, registerPage
 
 urlpatterns = [
     path('', startpage),
-    path('category/<slug:category>/', pagecategory),
+    path('category/<slug:category>/', pagecategory, name='category'),
     path('login/', loginPage, name='login'),
     path('register/', registerPage, name='register')
 ]
