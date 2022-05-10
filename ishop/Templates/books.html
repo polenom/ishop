@@ -50,10 +50,97 @@
         <div class="container ">
         <p><a href="/category/books/">books</a>/</p>
         <div class="row">
+
             <div class="col-lg-3">
+                 <form  action="/category/books/" method="post">
+                    {% csrf_token %}
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
+                     <span class="input-group-text">Search</span>
+                    <div class="input-group">
+                      <input type="text" aria-label="First name" class="form-control" name="MIN" placeholder="Min">
+                      <input type="text" aria-label="Last name" class="form-control" name="MAX" placeholder="Max">
+                    </div>
+                     <span class="input-group-text">Price</span>
+                {% for genre in genres %}
+                  {% if forloop.counter < 6%}
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="{{genre}}" id="flexCheckDefault" name="genre">
+                      <label class="form-check-label" for="flexCheckDefault">
+                          {{genre}}
+                      </label>
+                    </div>
+                  {% elif forloop.counter == 6  and not forloop.last %}
+                    <p>
+                      <a class="link-secondary" data-bs-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">Genres</a>
+                    </p>
+                    <div class="row">
+                      <div class="col">
+                        <div class="collapse multi-collapse" id="multiCollapseExample1">
+                          <div class="card card-body">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="{{genre}}" id="flexCheckDefault" name="genre">
+                              <label class="form-check-label" for="flexCheckDefault">
+                                  {{genre}}
+                              </label>
+                            </div>
+                    {% elif forloop.counter > 6  and not forloop.last %}
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" value="{{genre}}" id="flexCheckDefault" name="genre">
+                          <label class="form-check-label" for="flexCheckDefault">
+                              {{genre}}
+                          </label>
+                        </div>
+                    {% endif %}
+                    {% if forloop.counter >= 6 and forloop.last %}
+                          </div>
 
+                        </div>
+                      </div>
+                    </div>
+                {% endif%}
 
+              {% endfor %}
+              {% for author in authors %}
+                  {% if forloop.counter < 6%}
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="{% if author.authorName != '' %}{{author}}{% else %}без автора{% endif%}" id="flexCheckDefault" name="author">
+                      <label class="form-check-label" for="flexCheckDefault">
+                          {% if author.authorName != '' %}{{author}}{% else %}без автора{% endif%}
+                      </label>
+                    </div>
+                  {% elif forloop.counter == 6  and not forloop.last %}
+                    <p>
+                      <a class="link-secondary" data-bs-toggle="collapse" href="#multiCollapseExample12" role="button" aria-expanded="false" aria-controls="multiCollapseExample12">Authors</a>
+                    </p>
+                    <div class="row">
+                      <div class="col">
+                        <div class="collapse multi-collapse" id="multiCollapseExample12">
+                          <div class="card card-body">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="{% if author.authorName != '' %}{{author}}{% else %}без автора{% endif%}" id="flexCheckDefault" name="author">
+                              <label class="form-check-label" for="flexCheckDefault">
+                                  {% if author.authorName != '' %}{{author}}{% else %}без автора{% endif%}
+                              </label>
+                            </div>
+                    {% elif forloop.counter > 6  and not forloop.last %}
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" value="{% if author.authorName != '' %}{{author}}{% else %}без автора{% endif%}" id="flexCheckDefault" name="author">
+                          <label class="form-check-label" for="flexCheckDefault">
+                              {% if author.authorName != '' %}{{author}}{% else %}без автора{% endif%}
+                          </label>
+                        </div>
+                    {% endif %}
+                    {% if forloop.counter >= 6 and forloop.last %}
+                          </div>
 
+                        </div>
+                      </div>
+                    </div>
+                {% endif%}
+
+              {% endfor %}
+               <button class="btn btn-outline-success" type="submit">Filter</button>
+             </form>
             </div>
             <div class="col-lg-9">
                 <div class="album py-5 bg-light">
@@ -62,16 +149,23 @@
                        {% for book in books %}
                           <div class="col">
                             <div class="card shadow-sm">
-                                <img src="/{{book.booksPhoto}}" alt=""  class="rounded mx-auto d-block m-2" height="155" width="155" >
+                                <div class="row">
+                                    <div class="col-lg-8">
+                                        <p class="card-text m-3">{{book.booksDiscription}}</p>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <img src="/{{book.booksPhoto}}" alt=""  class="rounded mx-auto d-block m-2" height="155" width="155" >
+                                    </div>
+
                                 <div class="card-body">
-                                  <p class="card-text">{{book.booksTitle}}</p>
-                                  <p>{{book.booksAuthor}}</p>
+                                  <p class="card-text m-3">{{book.booksTitle}}</p>
+                                  <p class="card-text m-3">{{book.booksAuthor}}</p>
                                   <div class="d-flex justify-content-between align-items-center">
                                     <div class="btn-group">
                                       <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
-                                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                                      <button type="button" class="btn btn-sm btn-outline-secondary">Buy</button>
                                     </div>
-                                    <small class="text-muted">9</small>
+                                    <small class="text-muted">price: {{book.booksPrice}}</small>
                                   </div>
                                 </div>
                                </div >

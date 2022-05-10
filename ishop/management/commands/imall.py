@@ -92,7 +92,7 @@ class Command(BaseCommand):
                     try:
                         bookAuthor = Author.objects.get(authorName=bookAuthor)
                     except Author.DoesNotExist:
-                        bookAuthor = Author.objects.create(authorName=bookAuthor)
+                        bookAuthor = Author.objects.create(authorName=bookAuthor if bookAuthor else 'без автора')
                     try:
                         booksGenre = Genre.objects.get(genreName=bookGenre)
                     except Genre.DoesNotExist:
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                             booksPhoto = File(open(name,'rb'), name=bookImage.split('/')[-1]),
                             booksTitle=bookTitle[:100],
                             booksDiscription=bookDisc[:1700],
-                            booksAuthor=bookAuthor,
+                            booksAuthor= bookAuthor,
                             booksGenre=booksGenre,
                             booksPrice=float(bookPrice.replace(',','.').split()[0]),
                             booksCount=bookCount,

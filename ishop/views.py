@@ -5,7 +5,7 @@ from django.contrib.auth import login
 from django.shortcuts import render, HttpResponse, redirect
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
     Oilproducer, Motoroils, Motoroilsvolums
-from django.db.models import Q
+from django.db.models import Q, Count
 from itertools import chain
 from .form import UserRegForm, UserAuthForm
 
@@ -70,13 +70,51 @@ def registerPage(request):
 
 
 def pagecategory(request, category):
-    cats = Category.objects.values_list('categoryName', flat=True)
+    cats = Category.objects.all()
 
     if category == 'books':
-        books = Books.objects.all().order_by('-prod_id')
+
+        genres = Genre.objects.annotate(num_books=Count('books')).order_by('-num_books')
+        authors = Author.objects.annotate(num_books=Count('books')).order_by('-num_books')
+
+        if request.method == "POST":
+            if request.POST.get('search', None):
+                books = Books.objects.filter(booksTitle__icontains=request.POST['search'])
+            if request.POST.getlist('author'):
+                try:
+                    books = books.filter(booksAuthor__authorName__in=request.POST.getlist('author'))
+                except NameError:
+                    books = Books.objects.filter(booksAuthor__authorName__in=request.POST.getlist('author'))
+            if request.POST.getlist('genre'):
+                try:
+                    books = books.filter(booksGenre__genreName__in=request.POST.getlist('genre'))
+                except NameError:
+                    books = Books.objects.filter(booksGenre__genreName__in=request.POST.getlist('genre'))
+            if request.POST.getlist('MIN') and request.POST.getlist('MAX'):
+                print(request.POST.get('MIN'), ' ============== ', request.POST.get('MAX'))
+                min =int(request.POST.get('MIN')) if request.POST.get('MIN', None) else 0
+                max = int(request.POST.get('MAX')) if request.POST.get('MAX', None) else 100000000000000000
+                try:
+                    books = books.filter(
+                        Q(booksPrice__lte=max) &
+                        Q(booksPrice__gte=min)
+                    )
+                except NameError:
+                    books = Books.objects.filter(
+                        Q(booksPrice__lte=max) &
+                        Q(booksPrice__gte=min)
+                    )
+
+            print(request.POST.getlist('genre'))
+            print(request.POST)
+            print(books,123)
+        else:
+            books = Books.objects.all().order_by('-prod_id')
         param = {
             'cats': cats,
-            'books':books
+            'books': books,
+            'genres': genres,
+            'authors': authors,
         }
         return render(request, 'books.html', param)
     return HttpResponse('books')
