@@ -2,6 +2,7 @@ from operator import attrgetter
 
 from django.contrib import messages
 from django.contrib.auth import login
+from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import render, HttpResponse, redirect
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
     Oilproducer, Motoroils, Motoroilsvolums
@@ -29,7 +30,7 @@ def startpage(request):
         oils = Motoroils.objects.filter(
             Q(motoroilsTitle__icontains=namefilter)
         )
-        filte = sorted(chain(books, oils), key=attrgetter('prod.id'), reverse=True)
+        filte = sorted(chain(books, oils), key=attrgetter('prod.id'), reverse=True)[:9]
     params = {
         'category': category,
         'filte': filte,
@@ -76,22 +77,34 @@ def pagecategory(request, category):
 
         genres = Genre.objects.annotate(num_books=Count('books')).order_by('-num_books')
         authors = Author.objects.annotate(num_books=Count('books')).order_by('-num_books')
-
+        filter= {
+            'search':False,
+            'author':False,
+            'genre': False,
+            'res': False,
+            'MIN': False,
+            'MAX': False,
+        }
         if request.method == "POST":
+            filter['res'] = True
             if request.POST.get('search', None):
                 books = Books.objects.filter(booksTitle__icontains=request.POST['search'])
+                filter['search'] = request.POST.get('search', None)
             if request.POST.getlist('author'):
+                filter['author'] = request.POST.getlist('author')
                 try:
                     books = books.filter(booksAuthor__authorName__in=request.POST.getlist('author'))
                 except NameError:
                     books = Books.objects.filter(booksAuthor__authorName__in=request.POST.getlist('author'))
             if request.POST.getlist('genre'):
+                filter['genre'] = request.POST.getlist('genre')
                 try:
                     books = books.filter(booksGenre__genreName__in=request.POST.getlist('genre'))
                 except NameError:
                     books = Books.objects.filter(booksGenre__genreName__in=request.POST.getlist('genre'))
             if request.POST.getlist('MIN') and request.POST.getlist('MAX'):
-                print(request.POST.get('MIN'), ' ============== ', request.POST.get('MAX'))
+                filter['MIN'] = int(request.POST.get('MIN')) if request.POST.get('MIN', None) else False
+                filter['MAX'] = int(request.POST.get('MAX')) if request.POST.get('MAX', None) else False
                 min =int(request.POST.get('MIN')) if request.POST.get('MIN', None) else 0
                 max = int(request.POST.get('MAX')) if request.POST.get('MAX', None) else 100000000000000000
                 try:
@@ -105,16 +118,25 @@ def pagecategory(request, category):
                         Q(booksPrice__gte=min)
                     )
 
-            print(request.POST.getlist('genre'))
-            print(request.POST)
-            print(books,123)
+
+
         else:
             books = Books.objects.all().order_by('-prod_id')
+        pagbook = Paginator(books, 6)
+        pageNum = request.GET.get('page')
+        if pageNum:
+            try:
+                get_page = pagbook.page(pageNum)
+            except PageNotAnInteger:
+                get_page = pagbook.page(1)
+        else:
+            get_page = pagbook.page(1)
         param = {
             'cats': cats,
-            'books': books,
+            'books': get_page,
             'genres': genres,
             'authors': authors,
+            'filter': filter,
         }
         return render(request, 'books.html', param)
     return HttpResponse('books')
