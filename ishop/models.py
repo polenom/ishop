@@ -1,22 +1,25 @@
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.template.defaultfilters import slugify
+
 
 
 def userPhotoPath(instance, filename):
     date = datetime.now()
     return f'static/Photo/{date.year}/{date.month}/{date.day}/username_{instance.clientUser.username}_id_{instance.clientUser.id}_{datetime.now()}.{filename.split(".")[1]}'
 
+
 def bookPhoto(instance, filename):
     date = datetime.now()
     return f'static/Photo/book/{date.year}/{date.month}/{date.day}/book_{instance.booksTitle}.{filename.split(".")[1]}'
 
+
 def oilPhoto(instance, filename):
     date = datetime.now()
     return f'static/Photo/oil/{date.year}/{date.month}/{date.day}/book_{instance.motoroilsTitle}.{filename.split(".")[1]}'
+
 
 # Create your models here.
 class City(models.Model):
@@ -135,7 +138,7 @@ class Genre(models.Model):
 
 
 class Books(models.Model):
-    prod = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='books',primary_key=True)
+    prod = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='books', primary_key=True)
     booksPhoto = models.FileField(upload_to=bookPhoto, blank=True, default='', verbose_name='photo', null=True)
     booksTitle = models.CharField(max_length=100)
     booksDiscription = models.CharField(max_length=1700, default='')
@@ -144,6 +147,7 @@ class Books(models.Model):
     booksGenre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, verbose_name='books')
     booksPrice = models.FloatField()
     booksCount = models.IntegerField()
+    booksCom = models.BooleanField(default=True)
     booksSlug = models.SlugField(unique=True, null=True, blank=True)
 
     def __str__(self):
@@ -153,7 +157,7 @@ class Books(models.Model):
         if not self.booksSlug:
             self.booksSlug = self.booksTitle[:20]
             if Books.objects.filter(booksSlug=self.booksSlug):
-                self.booksSlug = self.booksSlug[:18]+str(random.randrange(100))
+                self.booksSlug = self.booksSlug[:18] + str(random.randrange(100))
         return super().save(force_insert=False, force_update=False, using=None, update_fields=None)
 
     class Meta:
@@ -165,11 +169,11 @@ class Oilproducer(models.Model):
     oilproducer = models.CharField(max_length=50)
 
     def __str__(self):
-        return  self.oilproducer
+        return self.oilproducer
 
 
 class Motoroils(models.Model):
-    prod = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='motoroils',primary_key=True)
+    prod = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='motoroils', primary_key=True)
     motoroilsProducer = models.ForeignKey(Oilproducer, on_delete=models.SET_NULL, null=True, related_name='oil')
     motoroilsPhoto = models.FileField(upload_to=oilPhoto, blank=True, default='', verbose_name='photo', null=True)
     motoroilsTitle = models.CharField(max_length=200, default='')
@@ -182,9 +186,8 @@ class Motoroils(models.Model):
     def volums(self):
         if self.oilvolume:
             res = ''
-            for i in  self.oilvolume.all():
-
-                res+= ' v' + str(i.motoroilsvolumsVolums)
+            for i in self.oilvolume.all():
+                res += ' v' + str(i.motoroilsvolumsVolums)
             return res
         else:
             return ''
@@ -201,3 +204,29 @@ class Motoroilsvolums(models.Model):
 
     def __str__(self):
         return str(self.motoroilsvolums.motoroilsTitle)
+
+
+class Commentsbook(models.Model):
+    combookBooks = models.ForeignKey(Books, on_delete=models.CASCADE, related_name='comment')
+    combookUser = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment')
+    combookText = models.CharField(max_length=200)
+    combookDate = models.DateTimeField(auto_now=True)
+
+    def time_before(self):
+        time = datetime.now(timezone.utc) - self.combookDate
+        if time.days:
+            return str(time.days)+' days ago'
+        elif time.seconds//3600:
+            return str(time.seconds//3600+1)+' hours ago'
+        else:
+            return str(time.seconds//60) + ' minutes ago'
+
+
+class LikesBooks(models.Model):
+    likesbooksBooks = models.ForeignKey(Books, on_delete=models.CASCADE, related_name='likesbook')
+    likesbooksUser = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likesbook')
+
+
+class StatusCommentsBlock(models.Model):
+    statuscomments = models.ForeignKey(Books, on_delete=models.CASCADE, related_name='statuscommentsblock')
+    statuscommentsBlock = models.ForeignKey(User, on_delete=models.CASCADE, related_name='statuscommentblock')

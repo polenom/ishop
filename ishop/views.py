@@ -8,8 +8,16 @@ from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_pr
     Oilproducer, Motoroils, Motoroilsvolums
 from django.db.models import Q, Count
 from itertools import chain
-from .form import UserRegForm, UserAuthForm
+from .form import UserRegForm, UserAuthForm, CommBookForm
 
+
+from django import template
+
+register = template.Library()
+
+@register.simple_tag
+def get_url(obj):
+  return '123'
 
 # Create your views here.
 
@@ -219,6 +227,40 @@ def pagegenre(request, pk):
     }
     return render(request, 'booksgenre.html', param )
 
+
+def book(request, genr, boo):
+    cats = Category.objects.all()
+    book = Books.objects.get(pk=boo)
+
+    if request.method == 'POST' and request.user.is_authenticated:
+        form = CommBookForm(data=request.POST)
+        if form.is_valid():
+            formsave  =  form.save(commit=False)
+            formsave.combookBooks_id=boo
+            formsave.combookUser=request.user
+            formsave.save()
+
+    form = CommBookForm()
+    comments = book.comment.all().order_by('-combookDate')
+    for i in comments:
+        i.timebefore = i.time_before()
+    pagbook = Paginator(comments, 10)
+    pageNum = request.GET.get('page')
+    if pageNum:
+        try:
+            get_page = pagbook.page(pageNum)
+        except PageNotAnInteger:
+            get_page = pagbook.page(1)
+    else:
+        get_page = pagbook.page(1)
+
+    param={
+        'cats': cats,
+        'book': book,
+        'form': form,
+        'comments':get_page
+    }
+    return render(request, 'book.html', param)
 
 def test(request):
     return HttpResponse('OK')
