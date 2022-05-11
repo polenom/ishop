@@ -5,19 +5,11 @@ from django.contrib.auth import login
 from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import render, HttpResponse, redirect
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
-    Oilproducer, Motoroils, Motoroilsvolums
+    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook
 from django.db.models import Q, Count
 from itertools import chain
 from .form import UserRegForm, UserAuthForm, CommBookForm
 
-
-from django import template
-
-register = template.Library()
-
-@register.simple_tag
-def get_url(obj):
-  return '123'
 
 # Create your views here.
 
@@ -141,7 +133,7 @@ def pagecategory(request, category):
             books = Books.objects.all().order_by('-prod_id')
         countorders = 6
         if filter['res']:
-            countorders=100
+            countorders = 100
             print(100)
         pagbook = Paginator(books, countorders)
         pageNum = request.GET.get('page')
@@ -170,7 +162,8 @@ def pagegenre(request, pk):
     except Genre.DoesNotExist:
         genre = False
     books = Books.objects.filter(booksGenre__pk=pk)
-    authors = Author.objects.filter(books__booksGenre__genreName=genre).annotate(num_books=Count('books')).order_by('-num_books')
+    authors = Author.objects.filter(books__booksGenre__genreName=genre).annotate(num_books=Count('books')).order_by(
+        '-num_books')
     filter = {
         'search': False,
         'author': False,
@@ -183,9 +176,9 @@ def pagegenre(request, pk):
         filter['res'] = True
         if request.POST.get('search', None):
             books = books.filter(
-                Q(booksTitle__icontains=request.POST['search'])|
+                Q(booksTitle__icontains=request.POST['search']) |
                 Q(booksAuthor__authorName__icontains=request.POST['search'])
-                                 )
+            )
             filter['search'] = request.POST.get('search', None)
         if request.POST.getlist('author'):
             filter['author'] = authors.filter(authorName__in=request.POST.getlist('author'))
@@ -208,7 +201,6 @@ def pagegenre(request, pk):
                     Q(booksPrice__gte=min)
                 )
 
-
     pagbook = Paginator(books, 10)
     pageNum = request.GET.get('page')
     if pageNum:
@@ -218,14 +210,14 @@ def pagegenre(request, pk):
             get_page = pagbook.page(1)
     else:
         get_page = pagbook.page(1)
-    param={
+    param = {
         'cats': cats,
         'books': get_page,
         'genre': genre,
         'authors': authors,
         'filter': filter,
     }
-    return render(request, 'booksgenre.html', param )
+    return render(request, 'booksgenre.html', param)
 
 
 def book(request, genr, boo):
@@ -235,9 +227,9 @@ def book(request, genr, boo):
     if request.method == 'POST' and request.user.is_authenticated:
         form = CommBookForm(data=request.POST)
         if form.is_valid():
-            formsave  =  form.save(commit=False)
-            formsave.combookBooks_id=boo
-            formsave.combookUser=request.user
+            formsave = form.save(commit=False)
+            formsave.combookBooks_id = boo
+            formsave.combookUser = request.user
             formsave.save()
 
     form = CommBookForm()
@@ -254,13 +246,25 @@ def book(request, genr, boo):
     else:
         get_page = pagbook.page(1)
 
-    param={
+    param = {
         'cats': cats,
         'book': book,
         'form': form,
-        'comments':get_page
+        'comments': get_page
     }
     return render(request, 'book.html', param)
+
+
+def removecomment(request, genr, boo, comm):
+    if request.user.is_authenticated and request.user.is_staff:
+        try:
+            comment = Books.objects.get(pk=boo).comment.get(pk=comm)
+            comment.delete()
+            messages.success(request, 'Comment has been removed')
+        except (Commentsbook.DoesNotExist,Books.DoesNotExist):
+            messages.warning(request, "Can't delete comment")
+        return redirect(f'/category/books/{genr}/{boo}')
+
 
 def test(request):
     return HttpResponse('OK')

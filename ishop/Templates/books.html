@@ -46,7 +46,7 @@
             {% endif%}
                 <form class="d-flex" action="/" method="post">
                     {% csrf_token %}
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="bq">
+                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
 
@@ -335,7 +335,7 @@
                                   <p class="card-text m-3"><a href="{% url 'booksgenre' pk=book.booksGenre.pk %}">{{book.booksGenre}}</a></p>
                                   <div class="d-flex justify-content-between align-items-center">
                                     <div class="btn-group">
-                                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                                      <button type="button" class="btn btn-sm btn-outline-secondary"><a href="{% url 'book' genr=book.booksGenre.pk boo=book.pk %}">View</a></button>
                                       <button type="button" class="btn btn-sm btn-outline-secondary">Buy</button>
                                     </div>
                                     <small class="text-muted">price: {{book.booksPrice}}</small>

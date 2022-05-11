@@ -89,6 +89,14 @@
                             </span>
                         </div>
                     </div>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+                               {{message}}
+                              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                     {% for comment in comments %}
                     <div class="card p-3">
                         <div class="d-flex justify-content-between align-items-center">
@@ -101,7 +109,7 @@
                       </div>
                       <div class="action d-flex justify-content-between mt-2 align-items-center">
                         <div class="reply px-4">
-                            <small>Remove</small>
+                            {%if request.user.is_authenticated and request.user.is_staff %}<small> <a href="{% url 'removecomment' genr=book.booksGenre.pk boo=book.pk comm=comment.pk %}">Remove</a></small>{% endif %}
                             <span class="dots"></span>
                             <small>Reply</small>
                             <span class="dots"></span>
@@ -114,7 +122,10 @@
                       </div>
                     </div>
                     {% endfor %}
+
+                    {% if comments.has_next or comments.has_previous%}
                     {% include 'paginator.html' with page=comments%}
+                    {% endif %}
                     <form action="" method="post" class="m-3">
                         <div class="container ">
                             <div class="row">
