@@ -8,7 +8,7 @@ from django.db import models
 
 def userPhotoPath(instance, filename):
     date = datetime.now()
-    return f'static/Photo/{date.year}/{date.month}/{date.day}/username_{instance.clientUser.username}_id_{instance.clientUser.id}_{datetime.now()}.{filename.split(".")[1]}'
+    return f'static/Photo/client/{date.year}/{date.month}/{date.day}/username_{instance.clientUser.username}_id_{instance.clientUser.id}_{datetime.now()}.{filename.split(".")[1]}'
 
 
 def bookPhoto(instance, filename):

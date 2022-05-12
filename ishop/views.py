@@ -1,7 +1,13 @@
+import os
+import urllib
 from operator import attrgetter
+from urllib.request import urlretrieve
 
+import requests
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.core.files import File
 from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import render, HttpResponse, redirect
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
@@ -265,6 +271,42 @@ def removecomment(request, genr, boo, comm):
             messages.warning(request, "Can't delete comment")
         return redirect(f'/category/books/{genr}/{boo}')
 
+
+def profile(request, name):
+    cats = Category.objects.all()
+
+
+    if request.user.is_authenticated:
+        user = User.objects.get(pk=request.user.pk)
+        try:
+            clien = user.client
+            if not clien.clientPhoto:
+                try:
+                    image, _ = urlretrieve(f'http://localhost:8080/monster/{name}')
+                except urllib.error.URLError:
+                    image = False
+                if image:
+                    clien.clientPhoto = File(open(image, 'rb'), name=f'{user.username}.img')
+                    clien.save()
+        except User.client.RelatedObjectDoesNotExist:
+            try:
+                image, _ = urlretrieve(f'http://localhost:8080/monster/{name}')
+            except urllib.error.URLError:
+                image = False
+            clien = Client.objects.create(
+                    clientUser=user,
+                    slug=user.username,
+                )
+            if image:
+                clien.clientPhoto=File(open(image, 'rb'), file=image)
+            if user.email:
+                clien.clientEmail = user.email
+            clien.save()
+        param = {
+            'cats': cats,
+            'client':clien,
+        }
+    return render(request,'profile.html', param)
 
 def test(request):
     return HttpResponse('OK')

@@ -2,7 +2,6 @@ from django.core.files import File
 from django.core.management.base import BaseCommand
 import requests
 from bs4 import BeautifulSoup
-from urllib.request import urlretrieve
 from ishop.models import Motoroils, Product, Oilproducer, Motoroilsvolums, Books, Author, Genre, Category
 from urllib.request import urlretrieve
 
