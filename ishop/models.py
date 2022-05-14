@@ -36,10 +36,12 @@ class Client(models.Model):
     clientName = models.CharField(max_length=30, blank=True, default='', verbose_name='first name', null=True)
     clientSecondname = models.CharField(max_length=30, blank=True, default='', verbose_name='second name', null=True)
     clientBirthday = models.DateTimeField(blank=True, null=True, verbose_name='birthday')
-    clientEmail = models.EmailField(max_length=200, verbose_name='email', null=True)
+    clientEmail = models.EmailField(max_length=200, verbose_name='email', null=True,blank=True)
     clientCountry = models.ForeignKey(City, on_delete=models.SET_NULL, verbose_name='client', blank=True, null=True)
     clientAddress = models.CharField(max_length=200, default='', blank=True, null=True)
+    clientMobile = models.CharField(max_length=20, default='', blank=True, null=True)
     slug = models.SlugField(null=True)
+
 
     def __str__(self):
         return self.clientUser.username

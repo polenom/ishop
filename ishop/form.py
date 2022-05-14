@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
-from ishop.models import Commentsbook
+from ishop.models import Commentsbook, Client
 
 
 class UserRegForm(UserCreationForm):
@@ -27,3 +27,14 @@ class CommBookForm(forms.ModelForm):
     class Meta:
         model=Commentsbook
         fields = ('combookText',)
+
+
+class ClientForm(forms.ModelForm):
+    clientPhoto = forms.ImageField(label='Photo', required=False)
+    clientBirthday = forms.DateField(label='Birthday',required=False, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}, format=('%Y-%m-%d')))
+    clientSecondname = forms.CharField(label='surname', required=False, widget=forms.TextInput(attrs={'placeholder':'surname' ,'class': 'form-control'}))
+    clientPhoto = forms.FileField(label='Photo',required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = Client
+        fields = ('clientPhoto', 'clientName', 'clientSecondname', 'clientBirthday', 'clientEmail', 'clientCountry', 'clientAddress','clientMobile')
