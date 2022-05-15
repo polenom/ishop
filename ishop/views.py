@@ -3,6 +3,7 @@ import urllib
 from operator import attrgetter
 from urllib.request import urlretrieve
 
+import pytz as pytz
 import requests
 from django.contrib import messages
 from django.contrib.auth import login
@@ -14,7 +15,7 @@ from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_pr
     Oilproducer, Motoroils, Motoroilsvolums, Commentsbook
 from django.db.models import Q, Count
 from itertools import chain
-from .form import UserRegForm, UserAuthForm, CommBookForm ,ClientForm
+from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm
 
 
 def CreateAvatar(model, name):
@@ -25,6 +26,7 @@ def CreateAvatar(model, name):
     if image:
         model.clientPhoto = File(open(image, 'rb'), name=f'{name}.img')
         model.save()
+
 
 # Create your views here.
 
@@ -276,14 +278,13 @@ def removecomment(request, genr, boo, comm):
             comment = Books.objects.get(pk=boo).comment.get(pk=comm)
             comment.delete()
             messages.success(request, 'Comment has been removed')
-        except (Commentsbook.DoesNotExist,Books.DoesNotExist):
+        except (Commentsbook.DoesNotExist, Books.DoesNotExist):
             messages.warning(request, "Can't delete comment")
         return redirect(f'/category/books/{genr}/{boo}')
 
 
 def profile(request, name):
     cats = Category.objects.all()
-
 
     if request.user.is_authenticated:
         user = User.objects.get(pk=request.user.pk)
@@ -300,34 +301,39 @@ def profile(request, name):
             except urllib.error.URLError:
                 image = False
             clien = Client.objects.create(
-                    clientUser=user,
-                    slug=user.username,
-                )
+                clientUser=user,
+                slug=user.username,
+            )
             if image:
-                clien.clientPhoto=File(open(image, 'rb'), file=image)
+                clien.clientPhoto = File(open(image, 'rb'), file=image)
             if user.email:
                 clien.clientEmail = user.email
             clien.save()
         if request.method == 'POST':
             cform = ClientForm(request.POST, request.FILES, instance=clien)
-            print(request.POST.get('clientPhoto-clear'),123)
+
             if cform.is_valid():
-                print(request.POST)
+                cform = cform.save(commit=False)
                 if request.POST.get('clientPhoto-clear'):
-                    cform = cform.save(commit=False)
                     cform.clientPhoto.delete()
                     CreateAvatar(clien, name)
                     cform.save()
-                else:
-                    cform.save()
+                if request.POST.get('country'):
+                    try:
+                        county = City.objects.get(cityName=request.POST.get('country'))
+                    except City.DoesNotExist:
+                        county = City.objects.create(cityName=request.POST.get('country'))
+                    cform.clientCity = county
+                cform.save()
         cform = ClientForm(instance=clien)
 
         param = {
             'cats': cats,
-            'client':clien,
+            'client': clien,
             'cform': cform,
         }
-    return render(request,'profile.html', param)
+    return render(request, 'profile.html', param)
+
 
 def test(request):
     return HttpResponse('OK')
