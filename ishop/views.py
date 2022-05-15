@@ -169,6 +169,40 @@ def pagecategory(request, category):
             'filter': filter,
         }
         return render(request, 'books.html', param)
+    if category == 'oils':
+        oilproducer = Oilproducer.objects.annotate(num_oils=Count('oils')).order_by('-num_oils')
+        volums = Motoroilsvolums.objects.values_list('motoroilsvolumsVolums', flat=True).distinct('motoroilsvolumsVolums').order_by('motoroilsvolumsVolums')
+        filter = {
+            'res': False,
+            'search': False,
+        }
+        if request.method == "POST":
+            filter['res'] = True
+            print(request.POST)
+            if request.POST.get('search', None):
+                oils = Motoroils.objects.filter(motoroilsTitle__icontains=request.POST['search'])
+                filter['search'] = request.POST.get('search')
+        else:
+            oils = Motoroils.objects.all().order_by('-prod_id')
+        if not filter['res']:
+            get_page = Paginator(oils, 10)
+            pageNum = request.GET.get('page')
+            if pageNum:
+                try:
+                    oils = get_page.page(pageNum)
+                except PageNotAnInteger:
+                    oils = get_page.page(1)
+            else:
+                oils = get_page.page(1)
+        param = {
+            'cats': cats,
+            'filter': filter,
+            'oilproducer5':  oilproducer[:5],
+            'oilproducerO': oilproducer[5:],
+            'volums': volums,
+            'oils': oils,
+        }
+        return render(request, 'oils.html', param )
     return HttpResponse('books')
 
 
@@ -296,16 +330,11 @@ def profile(request, name):
                 clien.clientEmail = user.email
                 clien.save()
         except User.client.RelatedObjectDoesNotExist:
-            try:
-                image, _ = urlretrieve(f'http://localhost:8080/monster/{name}')
-            except urllib.error.URLError:
-                image = False
             clien = Client.objects.create(
                 clientUser=user,
                 slug=user.username,
             )
-            if image:
-                clien.clientPhoto = File(open(image, 'rb'), file=image)
+            CreateAvatar(clien, name)
             if user.email:
                 clien.clientEmail = user.email
             clien.save()
@@ -323,7 +352,7 @@ def profile(request, name):
                         county = City.objects.get(cityName=request.POST.get('country'))
                     except City.DoesNotExist:
                         county = City.objects.create(cityName=request.POST.get('country'))
-                    cform.clientCity = county
+                    cform.clientCountry = county
                 cform.save()
         cform = ClientForm(instance=clien)
 

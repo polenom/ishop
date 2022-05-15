@@ -176,7 +176,7 @@ class Oilproducer(models.Model):
 
 class Motoroils(models.Model):
     prod = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='motoroils', primary_key=True)
-    motoroilsProducer = models.ForeignKey(Oilproducer, on_delete=models.SET_NULL, null=True, related_name='oil')
+    motoroilsProducer = models.ForeignKey(Oilproducer, on_delete=models.SET_NULL, null=True, related_name='oils')
     motoroilsPhoto = models.FileField(upload_to=oilPhoto, blank=True, default='', verbose_name='photo', null=True)
     motoroilsTitle = models.CharField(max_length=200, default='')
     motoroilsDescription = models.CharField(max_length=200, default='')

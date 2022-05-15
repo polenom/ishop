@@ -66,7 +66,7 @@
                 <form action="" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="row mt-2">
-                    <div class="col-md-6"><label class="labels">Name</label><input type="text" class="form-control" placeholder="first name" value="{{client.clientName}}" name="clientName"></div>
+                    <div class="col-md-6"><label class="labels">Name</label>{{cform.clientName}}</div>
                     <div class="col-md-6"><label class="labels">Surname</label>{{cform.clientSecondname}}</div>
                 </div>
                 <div class="row mt-3">
@@ -80,7 +80,7 @@
                     </div>
                     <div class="col-md-12"><label class="labels">Email</label>{{cform.clientEmail}}</div>
                     <div class="col-md-12"><label class="labels">Address</label>{{cform.clientAddress}}</div>
-                    <div class="col-md-12"><label class="labels">Country</label><input type="text" name='country' class="form-control" placeholder="Country" value="{% if clien.clientCountry%}{{clien.clientCountry}}{% endif %}"></div>
+                    <div class="col-md-12"><label class="labels">Country</label><input type="text" name='country' class="form-control" placeholder="Country" value="{% if client.clientCountry %}{{client.clientCountry.cityName}}{% endif %}"></div>
                 </div>
                 <div class="mt-5 text-center"><button class="btn btn-secondary profile-button" type="submit">Save Profile</button></div>
                 </form>
@@ -97,5 +97,6 @@
 </div>
 </div>
 </div>
+<p></p>
 </body>
 </html>
