@@ -107,7 +107,8 @@ def pagecategory(request, category):
         if request.method == "POST":
             filter['res'] = True
             if request.POST.get('search', None):
-                books = Books.objects.filter(booksTitle__icontains=request.POST['search'])
+                books = Books.objects.filter(Q(booksTitle__icontains=request.POST['search'])|
+                                             Q(booksAuthor__authorName__icontains=request.POST['search']))
                 filter['search'] = request.POST.get('search', None)
             if request.POST.getlist('author'):
                 filter['author'] = Author.objects.filter(authorName__in=request.POST.getlist('author'))
@@ -121,7 +122,6 @@ def pagecategory(request, category):
             if request.POST.getlist('genre'):
                 filter['genre'] = Genre.objects.filter(genreName__in=request.POST.getlist('genre'))
                 filter['genreother'] = Genre.objects.exclude(genreName__in=request.POST.getlist('genre'))
-                print(request.POST.getlist('genre'))
                 try:
                     books = books.filter(booksGenre__genreName__in=request.POST.getlist('genre'))
                 except NameError:
@@ -170,18 +170,62 @@ def pagecategory(request, category):
         }
         return render(request, 'books.html', param)
     if category == 'oils':
-        oilproducer = Oilproducer.objects.annotate(num_oils=Count('oils')).order_by('-num_oils')
-        volums = Motoroilsvolums.objects.values_list('motoroilsvolumsVolums', flat=True).distinct('motoroilsvolumsVolums').order_by('motoroilsvolumsVolums')
+
+        volums = Motoroilsvolums.objects.values_list('motoroilsvolumsVolums', flat=True).distinct(
+            'motoroilsvolumsVolums').order_by('motoroilsvolumsVolums')
+        volums = [str(num) for num in volums]
         filter = {
             'res': False,
             'search': False,
+            'MIN': False,
+            'MAX': False,
+            'oil': False,
+            'volum': False,
         }
+        oils = False
         if request.method == "POST":
             filter['res'] = True
-            print(request.POST)
             if request.POST.get('search', None):
                 oils = Motoroils.objects.filter(motoroilsTitle__icontains=request.POST['search'])
                 filter['search'] = request.POST.get('search')
+            if request.POST.get('MAX', None) or request.POST.get('MIN', None):
+                filter['MAX'] = int(request.POST.get('MAX')) if request.POST.get('MAX', None) else False
+                filter['MIN'] = int(request.POST.get('MIN')) if request.POST.get('MIN', None) else False
+                min = int(request.POST.get('MIN')) if request.POST.get('MIN', None) else 0
+                max = int(request.POST.get('MAX')) if request.POST.get('MAX', None) else 100000000000000000
+                if oils:
+                    oils = oils.filter(
+                        Q(oilvolume__motoroilsvolumsPrice__lte=max) &
+                        Q(oilvolume__motoroilsvolumsPrice__gte=min)
+                    )
+                else:
+                    oils = Motoroils.objects.filter(
+                        Q(oilvolume__motoroilsvolumsPrice__lte=max) &
+                        Q(oilvolume__motoroilsvolumsPrice__gte=min)
+                    )
+            print(oils, "MINMAX")
+            if request.POST.get('oil', None):
+                filter['oil'] = request.POST.getlist('oil')
+
+                if oils != False:
+                    oils = oils.filter(motoroilsProducer__oilproducer__in=request.POST.getlist('oil')).distinct()
+                else:
+                    oils = Motoroils.objects.filter(
+                        motoroilsProducer__oilproducer__in=request.POST.getlist('oil')).distinct()
+            print(oils)
+            if request.POST.get('volum', None):
+                filter['volum'] = request.POST.getlist('volum')
+                if oils != False:
+                    oils = oils.filter(oilvolume__motoroilsvolumsVolums__in=request.POST.getlist('volum')).distinct()
+                else:
+                    oils = Motoroils.objects.oils.filter(
+                        oilvolume__motoroilsvolumsVolums__in=request.POST.getlist('volum')).distinct()
+            print(oils)
+            if filter['oil']:
+                oilproducer5 = Oilproducer.objects.filter(oilproducer__in=filter['oil'])
+                oilproducerO = Oilproducer.objects.exclude(oilproducer__in=filter['oil']).annotate(
+                    num_oils=Count('oils')).order_by('-num_oils')
+            print(oils)
         else:
             oils = Motoroils.objects.all().order_by('-prod_id')
         if not filter['res']:
@@ -194,16 +238,32 @@ def pagecategory(request, category):
                     oils = get_page.page(1)
             else:
                 oils = get_page.page(1)
+        if not filter['oil']:
+            oilproducer = Oilproducer.objects.annotate(num_oils=Count('oils')).order_by('-num_oils')
+            oilproducer5 = oilproducer[:5]
+            oilproducerO = oilproducer[5:]
         param = {
             'cats': cats,
             'filter': filter,
-            'oilproducer5':  oilproducer[:5],
-            'oilproducerO': oilproducer[5:],
+            'oilproducer5': oilproducer5,
+            'oilproducerO': oilproducerO,
             'volums': volums,
             'oils': oils,
         }
-        return render(request, 'oils.html', param )
+        return render(request, 'oils.html', param)
     return HttpResponse('books')
+
+
+def pageoilproducer(request, pk):
+    cats = Category.objects.all()
+    param = {
+        'cats': cats,
+
+    }
+
+
+
+    return render(request, 'oilsproducer.html', param)
 
 
 def pagegenre(request, pk):
