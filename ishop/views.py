@@ -392,7 +392,6 @@ def oil(request, pk, pr):
     if request.method == 'POST' and request.user.is_authenticated:
         form = CommOilForm(data=request.POST)
         if form.is_valid():
-            print('123')
             formsave = form.save(commit=False)
             formsave.comoilOil_id = pr
             formsave.comoilUser = request.user

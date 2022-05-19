@@ -56,17 +56,23 @@
     <div class="container">
               <div class="col">
                 <div class="card shadow-sm">
-                    <img src="/book.booksPhoto}}" alt=""  class="rounded mx-auto d-block m-2" height="355" width="355" >
+                    <img src="/{{oil.motoroilsPhoto}}" alt=""  class="rounded mx-auto d-block m-2" height="355" width="355" >
                     <div class="card-body">
-                      <p class="card-text">book.booksTitle}}</p>
-                      <p class="card-text">book.booksDiscription}}</p>
-                      <p>book.booksAuthor}}</p>
-                      <div class="d-flex justify-content-between align-items-center">
+                      <p class="card-text">{{oil.motoroilsTitle}}</p>
+                      <p class="card-text">{{oil.motoroilsDescription}}</p>
+                     {% for i in oil.oilvolume.all %}
+                      <div class="d-flex justify-content-between align-items-center m-2">
+
+
                         <div class="btn-group">
+                          <button type="button" class="btn btn-sm btn-outline-secondary">add </button>
                           <button type="button" class="btn btn-sm btn-outline-secondary">Buy</button>
                         </div>
-                        <small class="text-muted">count: book.booksCount}}/price: book.booksPrice}}</small>
+                          <small class="text-muted">
+                            price: {{i.motoroilsvolumsPrice}} volume: {{i.motoroilsvolumsVolums}}<br>
+                          </small>
                       </div>
+                      {% endfor %}
                     </div>
                    </div >
                   </div >
