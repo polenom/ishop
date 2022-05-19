@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
-from ishop.models import Commentsbook, Client
+from ishop.models import Commentsbook, Client, Commentsoil
 
 
 class UserRegForm(UserCreationForm):
@@ -32,6 +32,12 @@ class CommBookForm(forms.ModelForm):
         fields = ('combookText',)
 
 
+class CommOilForm(forms.ModelForm):
+    class Meta:
+        model = Commentsoil
+        fields = ('comoilText',)
+
+
 class ClientForm(forms.ModelForm):
     clientPhoto = forms.ImageField(label='Photo', required=False)
     clientBirthday = forms.DateField(label='Birthday', required=False,
@@ -41,10 +47,14 @@ class ClientForm(forms.ModelForm):
         attrs={'placeholder': 'surname', 'class': 'form-control'}))
     clientPhoto = forms.FileField(label='Photo', required=False,
                                   widget=forms.FileInput(attrs={'class': 'form-control', 'placeholder': 'Photo'}))
-    clientMobile = forms.CharField(label='Mobile', required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'mobile'}))
-    clientEmail = forms.EmailField(label='Email',required=False, widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email'}))
-    clientAddress = forms.CharField(label='Mobile',required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'address'}))
-    clientName = forms.CharField(label='Name',required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'name'}))
+    clientMobile = forms.CharField(label='Mobile', required=False,
+                                   widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'mobile'}))
+    clientEmail = forms.EmailField(label='Email', required=False,
+                                   widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email'}))
+    clientAddress = forms.CharField(label='Mobile', required=False,
+                                    widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'address'}))
+    clientName = forms.CharField(label='Name', required=False,
+                                 widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'name'}))
 
     class Meta:
         model = Client

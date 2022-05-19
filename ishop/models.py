@@ -224,6 +224,22 @@ class Commentsbook(models.Model):
             return str(time.seconds//60) + ' minutes ago'
 
 
+class Commentsoil(models.Model):
+    comoilOil = models.ForeignKey(Motoroils, on_delete=models.CASCADE, related_name='commentOil')
+    comoilUser = models.ForeignKey(User, on_delete=models.CASCADE, related_name='commentOil')
+    comoilText = models.CharField(max_length=200)
+    comoilDate = models.DateTimeField(auto_now=True)
+
+    def time_before(self):
+        time = datetime.now(timezone.utc) - self.comoilDate
+        if time.days:
+            return str(time.days)+' days ago'
+        elif time.seconds//3600:
+            return str(time.seconds//3600+1)+' hours ago'
+        else:
+            return str(time.seconds//60) + ' minutes ago'
+
+
 class LikesBooks(models.Model):
     likesbooksBooks = models.ForeignKey(Books, on_delete=models.CASCADE, related_name='likesbook')
     likesbooksUser = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likesbook')
