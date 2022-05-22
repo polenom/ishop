@@ -38,6 +38,9 @@ class CommOilForm(forms.ModelForm):
         fields = ('comoilText',)
 
 
+class CountForm(forms.Form):
+    quantity = forms.TypedChoiceField(choices=[(i,str(i)) for i in range(1,11)], label='Count', widget=forms.Select(attrs={'class':'form-select-sm"'}))
+
 class ClientForm(forms.ModelForm):
     clientPhoto = forms.ImageField(label='Photo', required=False)
     clientBirthday = forms.DateField(label='Birthday', required=False,

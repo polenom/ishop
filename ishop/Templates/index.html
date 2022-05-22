@@ -77,7 +77,7 @@
                       <p class="card-text">{{bo.motoroilsTitle}}</p>
                       <div class="d-flex justify-content-between align-items-center">
                         <div class="btn-group">
-                          <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary"><a href="{% url 'oil' pk=bo.motoroilsProducer.pk pr=bo.pk %}">View</a></button>
                           <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
                         </div>
                         <small class="text-muted">9</small>
@@ -132,7 +132,7 @@
                       <p class="card-text">{{new.motoroils.motoroilsTitle}}</p>
                       <div class="d-flex justify-content-between align-items-center">
                         <div class="btn-group">
-                          <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary"><a href="{% url 'oil' pk=new.motoroils.motoroilsProducer.pk pr=new.motoroils.pk %}">View</a></button>
                           <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
                         </div>
                         <small class="text-muted">9</small>

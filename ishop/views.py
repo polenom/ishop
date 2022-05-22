@@ -15,7 +15,7 @@ from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_pr
     Oilproducer, Motoroils, Motoroilsvolums, Commentsbook
 from django.db.models import Q, Count
 from itertools import chain
-from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm
+from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm, CountForm
 
 
 def CreateAvatar(model, name):
@@ -28,18 +28,88 @@ def CreateAvatar(model, name):
         model.save()
 
 
+class Cart:
+
+    def __init__(self, request):
+        self.request = request
+        self.sesson = request.session
+        cart = self.sesson.get('cart')
+        if not cart:
+            cart = self.sesson['cart'] = {}
+        self.cart = cart
+
+    def add(self, product, value, count=1):
+        if value != '-1':
+            price = Motoroils.objects.get(pk=product).oilvolume.get(motoroilsvolumsVolums=value)
+            if price.motoroilsvolumsPrice:
+                self.cart[str(product) + '/' + value] = {'value': value, 'count': count,
+                                                         'price': price.motoroilsvolumsPrice}
+            else:
+                messages.error(self.request, 'The product is out of stock')
+        else:
+            price = Books.objects.get(pk=product)
+            if price.booksPrice:
+                self.cart[str(product) + '/' + value] = {'value': value, 'count': count,
+                                                         'price': price.booksPrice}
+            else:
+                messages.error(self.request, 'The product is out of stock')
+            print(self.cart, 'booook')
+
+    def delete(self, product, value):
+        del self.cart[str(product) + '/' + value]
+        self.save()
+
+    def clear(self):
+        del self.sesson['cart']
+        print(self.sesson['cart'])
+        self.sesson.modified = True
+
+    def get_total_price(self):
+        print([i for i in self.cart.values()])
+        return str(sum([i['price'] * int(i['count']) for i in self.cart.values()]))
+
+    def save(self):
+        self.sesson['cart'] = self.cart
+        self.sesson.modified = True
+
+    def __len__(self):
+        return sum([int(item['count']) for item in self.cart.values()])
+
+    def __iter__(self):
+        for prod in self.cart.keys():
+            if prod.split('/')[-1] != '-1':
+                self.cart[prod]['product'] = Motoroils.objects.get(pk=prod.split('/')[0]).oilvolume.get(
+                    motoroilsvolumsVolums=prod.split('/')[-1])
+                yield self.cart[prod]
+            else:
+                self.cart[prod]['product'] = Books.objects.get(pk=prod.split('/')[0])
+                yield self.cart[prod]
+
+    # if request.session.get('cart'):
+    #     res = []
+    #     for tovar in request.session.keys():
+    #         try:
+    #             pr = int(tovar)
+    #         except ValueError:
+    #             continue
+    #         if request.session[tovar]['type'] == 1:
+    #             res.append((Motoroils.objects.get(pk=pr).oilvolume.get(motoroilsvolumsVolums=float(request.session[tovar]['value'])),request.session[tovar]['count']))
+    #         else:
+    #             pass
+    #     print(request.session.keys(),1111)
+    #     print(res)
+    #     return res
+
+
 # Create your views here.
 
 def startpage(request):
-    print(request.session.keys(), 123)
     category = Category.objects.values_list('categoryName', flat=True)
     newOrder = Product.objects.all().order_by('-id')[:12]
     print(newOrder)
     filte = False
     if request.method == 'POST':
         namefilter = request.POST['q']
-        print(namefilter, 777777777777)
-        print()
         books = Books.objects.filter(
             Q(booksTitle__icontains=namefilter) |
             Q(booksAuthor__authorName__icontains=namefilter) |
@@ -409,11 +479,16 @@ def oil(request, pk, pr):
             get_page = pagbook.page(1)
     else:
         get_page = pagbook.page(1)
+    formadd = CountForm()
+    cart = Cart(request)
+    cart.get_total_price()
     param = {
         'cats': cats,
         'oil': oil,
         'form': form,
-        'comments': get_page
+        'formadd': formadd,
+        'comments': get_page,
+        'cart': cart,
     }
     return render(request, 'oil.html', param)
 
@@ -443,12 +518,13 @@ def book(request, genr, boo):
             get_page = pagbook.page(1)
     else:
         get_page = pagbook.page(1)
-
+    formadd = CountForm()
     param = {
         'cats': cats,
         'book': book,
         'form': form,
-        'comments': get_page
+        'comments': get_page,
+        'formadd': formadd
     }
     return render(request, 'book.html', param)
 
@@ -514,3 +590,25 @@ def profile(request, name):
 
 def test(request):
     return HttpResponse('OK')
+
+
+def oiladd(request, pk, pr):
+    cart = Cart(request)
+    print(request.session['cart'], 'valuesssssssssss')
+    cart.add(
+        product=pr,
+        value=request.GET['val'],
+        count=request.POST.get('quantity')
+    )
+    cart.save()
+
+    if request.GET['val'] != '-1':
+        return redirect(f'/category/oils/{pk}/{pr}/')
+    else:
+        return redirect(f'/category/books/{pk}/{pr}/')
+
+
+def mycart(request):
+    cart = Cart(request)
+
+    return render(request, 'cart.html', {'carts': cart})

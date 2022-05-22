@@ -65,7 +65,11 @@
 
 
                         <div class="btn-group">
-                          <button type="button" class="btn btn-sm btn-outline-secondary">add </button>
+                          <form action="{% url 'addcart' pk=oil.motoroilsProducer.pk pr=oil.pk  %}?val={{i.motoroilsvolumsVolums}}" method="post" >
+                              {% csrf_token%}
+                              {{ formadd }}
+                              <button type="submit" class="btn btn-sm btn-outline-secondary">add</button>
+                          </form>
                           <button type="button" class="btn btn-sm btn-outline-secondary">Buy</button>
                         </div>
                           <small class="text-muted">

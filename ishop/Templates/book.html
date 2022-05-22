@@ -63,6 +63,11 @@
                       <p>{{book.booksAuthor}}</p>
                       <div class="d-flex justify-content-between align-items-center">
                         <div class="btn-group">
+                          <form action="{% url 'addcart' pk=book.booksGenre.pk pr=book.pk  %}?val=-1" method="post" >
+                              {% csrf_token%}
+                              {{ formadd }}
+                              <button type="submit" class="btn btn-sm btn-outline-secondary">add</button>
+                          </form>
                           <button type="button" class="btn btn-sm btn-outline-secondary">Buy</button>
                         </div>
                         <small class="text-muted">count: {{book.booksCount}}/price: {{book.booksPrice}}</small>
