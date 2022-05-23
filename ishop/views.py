@@ -61,12 +61,11 @@ class Cart:
 
     def clear(self):
         del self.sesson['cart']
-        print(self.sesson['cart'])
         self.sesson.modified = True
 
     def get_total_price(self):
         print([i for i in self.cart.values()])
-        return str(sum([i['price'] * int(i['count']) for i in self.cart.values()]))
+        return str(round(sum([i['price'] * int(i['count']) for i in self.cart.values()]),2))
 
     def save(self):
         self.sesson['cart'] = self.cart
@@ -77,9 +76,11 @@ class Cart:
 
     def __iter__(self):
         for prod in self.cart.keys():
+            self.cart[prod]['summa'] = str(self.cart[prod]['price']*int(self.cart[prod]['count']))
             if prod.split('/')[-1] != '-1':
                 self.cart[prod]['product'] = Motoroils.objects.get(pk=prod.split('/')[0]).oilvolume.get(
                     motoroilsvolumsVolums=prod.split('/')[-1])
+                print(self.cart[prod])
                 yield self.cart[prod]
             else:
                 self.cart[prod]['product'] = Books.objects.get(pk=prod.split('/')[0])
@@ -106,7 +107,6 @@ class Cart:
 def startpage(request):
     category = Category.objects.values_list('categoryName', flat=True)
     newOrder = Product.objects.all().order_by('-id')[:12]
-    print(newOrder)
     filte = False
     if request.method == 'POST':
         namefilter = request.POST['q']
@@ -119,10 +119,12 @@ def startpage(request):
             Q(motoroilsTitle__icontains=namefilter)
         )
         filte = sorted(chain(books, oils), key=attrgetter('prod.id'), reverse=True)[:9]
+    cart = Cart(request)
     params = {
         'category': category,
         'filte': filte,
-        'newOrder': newOrder
+        'newOrder': newOrder,
+        'cart': cart,
     }
     return render(request, 'index.html', params)
 
@@ -160,7 +162,7 @@ def registerPage(request):
 
 def pagecategory(request, category):
     cats = Category.objects.all()
-
+    cart = Cart(request)
     if category == 'books':
 
         genres = Genre.objects.annotate(num_books=Count('books')).order_by('-num_books')
@@ -238,6 +240,7 @@ def pagecategory(request, category):
             'genres': genres,
             'authors': authors,
             'filter': filter,
+            'cart':cart,
         }
         return render(request, 'books.html', param)
     if category == 'oils':
@@ -326,6 +329,7 @@ def pagecategory(request, category):
             'oilproducerO': oilproducerO,
             'volums': volums,
             'oils': oils,
+            'cart': cart,
         }
         return render(request, 'oils.html', param)
     return HttpResponse('books')
@@ -333,6 +337,7 @@ def pagecategory(request, category):
 
 def pageoilproducer(request, pk):
     cats = Category.objects.all()
+    cart = Cart(request)
     try:
         producer = Oilproducer.objects.get(pk=pk)
     except Oilproducer.DoesNotExist:
@@ -383,7 +388,8 @@ def pageoilproducer(request, pk):
         'producer': producer,
         'oils': oils,
         'volums': volums,
-        'filter': filter
+        'filter': filter,
+        'cart': cart,
 
     }
 
@@ -392,6 +398,7 @@ def pageoilproducer(request, pk):
 
 def pagegenre(request, pk):
     cats = Category.objects.all()
+    cart = Cart(request)
     try:
         genre = Genre.objects.get(pk=pk)
     except Genre.DoesNotExist:
@@ -406,6 +413,7 @@ def pagegenre(request, pk):
         'MIN': False,
         'MAX': False,
         'authorother': False,
+        'cart': cart,
     }
     if request.method == "POST":
         filter['res'] = True
@@ -451,6 +459,7 @@ def pagegenre(request, pk):
         'genre': genre,
         'authors': authors,
         'filter': filter,
+        'cart': cart,
     }
     return render(request, 'booksgenre.html', param)
 
@@ -458,6 +467,7 @@ def pagegenre(request, pk):
 def oil(request, pk, pr):
     cats = Category.objects.all()
     oil = Motoroils.objects.get(pk=pr)
+
 
     if request.method == 'POST' and request.user.is_authenticated:
         form = CommOilForm(data=request.POST)
@@ -481,7 +491,7 @@ def oil(request, pk, pr):
         get_page = pagbook.page(1)
     formadd = CountForm()
     cart = Cart(request)
-    cart.get_total_price()
+
     param = {
         'cats': cats,
         'oil': oil,
@@ -496,6 +506,7 @@ def oil(request, pk, pr):
 def book(request, genr, boo):
     cats = Category.objects.all()
     book = Books.objects.get(pk=boo)
+    cart = Cart(request)
 
     if request.method == 'POST' and request.user.is_authenticated:
         form = CommBookForm(data=request.POST)
@@ -524,7 +535,8 @@ def book(request, genr, boo):
         'book': book,
         'form': form,
         'comments': get_page,
-        'formadd': formadd
+        'formadd': formadd,
+        'cart': cart,
     }
     return render(request, 'book.html', param)
 
@@ -542,7 +554,7 @@ def removecomment(request, genr, boo, comm):
 
 def profile(request, name):
     cats = Category.objects.all()
-
+    cart = Cart(request)
     if request.user.is_authenticated:
         user = User.objects.get(pk=request.user.pk)
         try:
@@ -583,6 +595,7 @@ def profile(request, name):
             'cats': cats,
             'client': clien,
             'cform': cform,
+            'cart': cart,
         }
 
     return render(request, 'profile.html', param)
@@ -610,5 +623,9 @@ def oiladd(request, pk, pr):
 
 def mycart(request):
     cart = Cart(request)
-
-    return render(request, 'cart.html', {'carts': cart})
+    cats = Category.objects.all()
+    param ={
+        'carts': cart,
+        'cats': cats,
+    }
+    return render(request, 'cart.html', param)

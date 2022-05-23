@@ -1,0 +1,7 @@
+{% with total_items=cart|length %}
+        Your cart:
+        <a href="{% url 'mycart' %}">
+            {{ total_items }} item{{ total_items|pluralize }},
+            BYN: {{ cart.get_total_price }}
+        </a>
+{% endwith %}

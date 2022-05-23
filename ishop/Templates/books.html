@@ -29,8 +29,12 @@
                   <a class="nav-link active" aria-current="page" href="{% url 'category' category=cat %}">{{cat}}</a>
                 </li>
             {% endfor %}
-
             </ul>
+             {% if cart|length > 0 %}
+                <ul class="navbar-nav  mb-2 mb-lg-0">
+                    {% include 'cartbar.html' with cart=cart%}
+                </ul>
+            {% endif %}
             {% if request.user.is_authenticated %}
                 <ul class="navbar-nav  mb-2 mb-lg-0">
                 <li class="nav-item">
