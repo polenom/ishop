@@ -79,7 +79,7 @@
                                     </div>
                                     <div class="col-lg-1 mt-5 m-2">
                                         <a href="{% url 'oil' pk=cart.product.motoroilsvolums.motoroilsProducer.pk pr=cart.product.motoroilsvolums.pk %}">View</a>
-
+                                        <a href="{% url 'deletecart' pk=cart.product.motoroilsvolums.pk val=cart.value %}">Remove</a>
                                     </div>
 
                                 </div>
@@ -106,21 +106,16 @@
                                     </div>
                                     <div class="col-lg-1 mt-5 m-2">
                                         <a href="{% url 'book' genr=cart.product.booksGenre.pk boo=cart.product.pk %}">View</a>
-                                    </div>
-                                    <div class="col-lg-1 mt-5 m-2">
-                                        <a href="">Remove</a>
+                                        <a href="{% url 'deletecart' pk=cart.product.pk val=cart.value %}">Remove</a>
                                     </div>
                                 </div>
                                </div >
                               </div >
                       {% endif%}
                     {% endfor %}
-
+                      <div class="col-lg-12 d-flex flex-row-reverse ">
+                        <button type="button" class="btn btn-primary m-2"><a href="{% url 'cartclear' %}" class="btn btn-primary">Clear</a></button>
+                        <button type="button" class="btn btn-primary m-2">Buy</button>
+                      </div>
                   </div>
                 </div>
-
-
-
-{% for cart in carts %}
-    <p>{{cart}}</p>
-{% endfor %}

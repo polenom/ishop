@@ -65,7 +65,7 @@ class Cart:
 
     def get_total_price(self):
         print([i for i in self.cart.values()])
-        return str(round(sum([i['price'] * int(i['count']) for i in self.cart.values()]),2))
+        return str(round(sum([i['price'] * int(i['count']) for i in self.cart.values()]), 2))
 
     def save(self):
         self.sesson['cart'] = self.cart
@@ -76,7 +76,7 @@ class Cart:
 
     def __iter__(self):
         for prod in self.cart.keys():
-            self.cart[prod]['summa'] = str(self.cart[prod]['price']*int(self.cart[prod]['count']))
+            self.cart[prod]['summa'] = str(round(self.cart[prod]['price'] * int(self.cart[prod]['count']), 2))
             if prod.split('/')[-1] != '-1':
                 self.cart[prod]['product'] = Motoroils.objects.get(pk=prod.split('/')[0]).oilvolume.get(
                     motoroilsvolumsVolums=prod.split('/')[-1])
@@ -240,7 +240,7 @@ def pagecategory(request, category):
             'genres': genres,
             'authors': authors,
             'filter': filter,
-            'cart':cart,
+            'cart': cart,
         }
         return render(request, 'books.html', param)
     if category == 'oils':
@@ -468,7 +468,6 @@ def oil(request, pk, pr):
     cats = Category.objects.all()
     oil = Motoroils.objects.get(pk=pr)
 
-
     if request.method == 'POST' and request.user.is_authenticated:
         form = CommOilForm(data=request.POST)
         if form.is_valid():
@@ -621,10 +620,22 @@ def oiladd(request, pk, pr):
         return redirect(f'/category/books/{pk}/{pr}/')
 
 
+def deletemycartitem(request, pk, val):
+    cart = Cart(request)
+    cart.delete(product=pk, value=val)
+    return redirect('/cart/')
+
+
+def cartclear(request):
+    cart=Cart(request)
+    cart.clear()
+    return redirect('/cart/')
+
+
 def mycart(request):
     cart = Cart(request)
     cats = Category.objects.all()
-    param ={
+    param = {
         'carts': cart,
         'cats': cats,
     }
