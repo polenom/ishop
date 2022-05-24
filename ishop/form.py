@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
-from ishop.models import Commentsbook, Client, Commentsoil
+from ishop.models import Commentsbook, Client, Commentsoil, Buy
 
 
 class UserRegForm(UserCreationForm):
@@ -39,7 +39,9 @@ class CommOilForm(forms.ModelForm):
 
 
 class CountForm(forms.Form):
-    quantity = forms.TypedChoiceField(choices=[(i,str(i)) for i in range(1,11)], label='Count', widget=forms.Select(attrs={'class':'form-select-sm"'}))
+    quantity = forms.TypedChoiceField(choices=[(i, str(i)) for i in range(1, 11)], label='Count',
+                                      widget=forms.Select(attrs={'class': 'form-select-sm"'}))
+
 
 class ClientForm(forms.ModelForm):
     clientPhoto = forms.ImageField(label='Photo', required=False)
@@ -54,7 +56,7 @@ class ClientForm(forms.ModelForm):
                                    widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'mobile'}))
     clientEmail = forms.EmailField(label='Email', required=False,
                                    widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email'}))
-    clientAddress = forms.CharField(label='Mobile', required=False,
+    clientAddress = forms.CharField(label='Address', required=False,
                                     widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'address'}))
     clientName = forms.CharField(label='Name', required=False,
                                  widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'name'}))
@@ -63,3 +65,11 @@ class ClientForm(forms.ModelForm):
         model = Client
         fields = ('clientPhoto', 'clientName', 'clientSecondname', 'clientBirthday', 'clientEmail', 'clientCountry',
                   'clientAddress', 'clientMobile')
+
+
+class OrderComForm(forms.ModelForm):
+    buyDescription = forms.CharField(label='Name', required=False,
+                    widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Comment'}))
+    class Meta:
+        model = Buy
+        fields = ('buyDescription',)

@@ -73,7 +73,7 @@
                               {{ formadd }}
                               <button type="submit" class="btn btn-sm btn-outline-secondary">add</button>
                           </form>
-                          <button type="button" class="btn btn-sm btn-outline-secondary">Buy</button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary"><a href="{% url 'buyitem' %}?value=-1&pr={{book.pk}}" class="btn btn-primary">Buy</a></button>
                         </div>
                         <small class="text-muted">count: {{book.booksCount}}/price: {{book.booksPrice}}</small>
                       </div>
@@ -120,10 +120,6 @@
                       <div class="action d-flex justify-content-between mt-2 align-items-center">
                         <div class="reply px-4">
                             {%if request.user.is_authenticated and request.user.is_staff %}<small> <a href="{% url 'removecomment' genr=book.booksGenre.pk boo=book.pk comm=comment.pk %}">Remove</a></small>{% endif %}
-                            <span class="dots"></span>
-                            <small>Reply</small>
-                            <span class="dots"></span>
-                            <small>Translate</small>
                         </div>
                         <div class="icons align-items-center">
                             <i class="fa fa-star text-warning"></i>

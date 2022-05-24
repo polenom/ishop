@@ -105,12 +105,16 @@ class Buy_product(models.Model):
     buyproductProduct = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, verbose_name='buyproduct',
                                           related_name='buyproduct')
     buyproductCount = models.IntegerField(default=1, verbose_name='Count')
+    buyproductValue = models.CharField(max_length=5)
 
     def __str__(self):
         return str(self.buyproductProduct)
 
     def title(self):
-        return self.buyproductProduct.books.booksTitle
+        if self.buyproductProduct.product.categoryName != 'books':
+            return self.buyproductProduct.motoroils.motoroilsTitle
+        else:
+            return self.buyproductProduct.books.booksTitle
 
     class Meta:
         verbose_name = 'Buy_product'

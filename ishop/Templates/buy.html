@@ -34,7 +34,7 @@
             {% if request.user.is_authenticated %}
                 <ul class="navbar-nav  mb-2 mb-lg-0">
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="{% url 'login' %}">{{request.user.username}}</a>
+                  <a class="nav-link active" aria-current="page" href="{% url 'profile' request.user.username %}">{{request.user.username}}</a>
                 </li>
             </ul>
             {% else %}
@@ -53,71 +53,62 @@
             </div>
         </div>
     </nav>
-
-            <div class="container">
-                <div class="album py-5 bg-light">
-                  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-1 g-3">
-                       {% for cart in carts %}
+    <div class="container rounded bg-white mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-4 border-right">
+            {% if check %}
+                <p> Check your personal details</p>
+                <p> Name: {{user.clientName}}</p>
+                <p> Second name: {{user.clientSecondname}}</p>
+                <p> City : {{user.clientCountry}}</p>
+                <p> Address : {{user.clientAddress}}</p>
+                <form action="" method="post" >
+                    {% csrf_token %}
+                    {{ form.as_p}}
+                    <button class="btn btn-secondary" type="submit"> add comment to order</button>
+                </form>
+              {% else %}
+                <p>you do not have one of these fields filled in first name, last name, address, city They must be filled in</p>
+              {% endif%}
+        </div>
+        <div class="col-md-3 border-right">
+            <p>Payment method: cash only</p>
+        </div>
+        <div class="col-md-5 border-right">
+            {% for cart in carts %}
                        {% if cart.value != '-1' %}
-                          <div class="col">
-                            <div class="card shadow-sm">
-                                <div class="row">
+                            <div class="row">
                                     <div class="col-lg-3">
                                         <p class="card-text mt-5 m-2">{{cart.product.motoroilsvolums.motoroilsTitle}}<br>
                                         Volume: {{cart.value}}</p>
                                     </div>
                                     <div class="col-lg-2">
-                                        <img src="/{{cart.product.motoroilsvolums.motoroilsPhoto}}" alt=""  class="rounded mx-auto d-block m-3" height="120" width="120" >
-                                    </div>
-                                    <div class="col-lg-2">
-                                        <p class="card-text mt-5 ">Count:{{cart.count}}</p>
-                                    </div>
-                                    <div class="col-lg-2">
-                                        <p class="card-text mt-5 mb-lg-0">Price:{{cart.price}}</p>
-                                    </div>
-                                    <div class="col-lg-1">
-                                        <p class="card-text mt-5 mb-lg-0">Sum:{{cart.summa}}</p>
+                                        <p class="card-text mt-5 ">{{cart.count}} X {{cart.price}}</p>
                                     </div>
                                     <div class="col-lg-1 mt-5 m-2">
                                         <a href="{% url 'oil' pk=cart.product.motoroilsvolums.motoroilsProducer.pk pr=cart.product.motoroilsvolums.pk %}">View</a>
-                                        <a href="{% url 'deletecart' pk=cart.product.motoroilsvolums.pk val=cart.value %}">Remove</a>
                                     </div>
-
                                 </div>
-                               </div >
-                              </div >
                       {% else %}
-                      <div class="col">
-                            <div class="card shadow-sm">
                                 <div class="row">
                                     <div class="col-lg-3">
                                         <p class="card-text mt-5 m-2">{{cart.product.booksTitle}}</p>
                                     </div>
                                     <div class="col-lg-2">
-                                        <img src="/{{cart.product.booksPhoto}}" alt=""  class="rounded mx-auto d-block m-3" height="120" width="120" >
-                                    </div>
-                                    <div class="col-lg-2">
-                                        <p class="card-text mt-5 ">Count:{{cart.count}}</p>
-                                    </div>
-                                    <div class="col-lg-2">
-                                        <p class="card-text mt-5 mb-lg-0">Price:{{cart.price}}</p>
-                                    </div>
-                                    <div class="col-lg-1">
-                                        <p class="card-text mt-5 mb-lg-0">Sum:{{cart.summa}}</p>
+                                        <p class="card-text mt-5 ">{{cart.count}} X {{cart.price}}</p>
                                     </div>
                                     <div class="col-lg-1 mt-5 m-2">
                                         <a href="{% url 'book' genr=cart.product.booksGenre.pk boo=cart.product.pk %}">View</a>
-                                        <a href="{% url 'deletecart' pk=cart.product.pk val=cart.value %}">Remove</a>
                                     </div>
                                 </div>
-                               </div >
-                              </div >
                       {% endif%}
                     {% endfor %}
-                      <p class="text-end"> Sum order: {{carts.get_total_price}}</p>
-                      <div class="col-lg-12 d-flex flex-row-reverse ">
-                        <button type="button" class="btn btn-primary m-2"><a href="{% url 'cartclear' %}" class="btn btn-primary">Clear</a></button>
-                        <button type="button" class="btn btn-primary m-2"><a href="{% url 'buy' %}" class="btn btn-primary">Buy</a></button>
-                      </div>
-                  </div>
-                </div>
+                    <div class="row">
+                        <p class="text-starts m-3"> Sum order: {{carts.get_total_price}}</p>
+                    </div>
+        </div>
+            </div>
+          </div>
+        </div>
+</body>
+</html>

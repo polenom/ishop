@@ -1,5 +1,6 @@
 import os
 import urllib
+from datetime import datetime, timezone
 from operator import attrgetter
 from urllib.request import urlretrieve
 
@@ -15,7 +16,7 @@ from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_pr
     Oilproducer, Motoroils, Motoroilsvolums, Commentsbook
 from django.db.models import Q, Count
 from itertools import chain
-from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm, CountForm
+from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm, CountForm, OrderComForm
 
 
 def CreateAvatar(model, name):
@@ -26,6 +27,37 @@ def CreateAvatar(model, name):
     if image:
         model.clientPhoto = File(open(image, 'rb'), name=f'{name}.img')
         model.save()
+
+
+def createOrder(form, cart):
+    steps = Step.objects.all().order_by('id')
+    for step in steps:
+        if step.id == 1:
+            Buy_step.objects.create(
+                buystepBuy=form,
+                buystepStep=step,
+                buystepDatestart=datetime.now(timezone.utc),
+            )
+        else:
+            Buy_step.objects.create(
+                buystepBuy=form,
+                buystepStep=step,
+            )
+    for item in cart:
+        if item['value'] != '-1':
+            Buy_product.objects.create(
+                buyproductBuy=form,
+                buyproductProduct=item['product'].motoroilsvolums.prod,
+                buyproductCount=int(item['count']),
+                buyproductValue=item['value'],
+            )
+        else:
+            Buy_product.objects.create(
+                buyproductBuy=form,
+                buyproductProduct=item['product'].prod,
+                buyproductCount=int(item['count']),
+                buyproductValue=item['value'],
+            )
 
 
 class Cart:
@@ -41,22 +73,20 @@ class Cart:
     def add(self, product, value, count=1):
         if value != '-1':
             price = Motoroils.objects.get(pk=product).oilvolume.get(motoroilsvolumsVolums=value)
+
             if price.motoroilsvolumsPrice:
-                self.cart[str(product) + '/' + value] = {'value': value, 'count': count,
+
+                self.cart[str(product) + ' ' + value] = {'value': value, 'count': count,
                                                          'price': price.motoroilsvolumsPrice}
-            else:
-                messages.error(self.request, 'The product is out of stock')
         else:
             price = Books.objects.get(pk=product)
             if price.booksPrice:
-                self.cart[str(product) + '/' + value] = {'value': value, 'count': count,
+                self.cart[str(product) + ' ' + value] = {'value': value, 'count': count,
                                                          'price': price.booksPrice}
-            else:
-                messages.error(self.request, 'The product is out of stock')
-            print(self.cart, 'booook')
+
 
     def delete(self, product, value):
-        del self.cart[str(product) + '/' + value]
+        del self.cart[str(product) + ' ' + value]
         self.save()
 
     def clear(self):
@@ -64,7 +94,6 @@ class Cart:
         self.sesson.modified = True
 
     def get_total_price(self):
-        print([i for i in self.cart.values()])
         return str(round(sum([i['price'] * int(i['count']) for i in self.cart.values()]), 2))
 
     def save(self):
@@ -76,33 +105,16 @@ class Cart:
 
     def __iter__(self):
         for prod in self.cart.keys():
+            print(prod,22222222222222222222222)
             self.cart[prod]['summa'] = str(round(self.cart[prod]['price'] * int(self.cart[prod]['count']), 2))
-            if prod.split('/')[-1] != '-1':
-                self.cart[prod]['product'] = Motoroils.objects.get(pk=prod.split('/')[0]).oilvolume.get(
-                    motoroilsvolumsVolums=prod.split('/')[-1])
-                print(self.cart[prod])
+            if prod.split(' ')[-1] != '-1':
+                self.cart[prod]['product'] = Motoroils.objects.get(pk=prod.split(' ')[0]).oilvolume.get(motoroilsvolumsVolums=prod.split(' ')[1])
+                print( self.cart[prod]['product'])
                 yield self.cart[prod]
             else:
-                self.cart[prod]['product'] = Books.objects.get(pk=prod.split('/')[0])
+                self.cart[prod]['product'] = Books.objects.get(pk=prod.split(' ')[0])
                 yield self.cart[prod]
 
-    # if request.session.get('cart'):
-    #     res = []
-    #     for tovar in request.session.keys():
-    #         try:
-    #             pr = int(tovar)
-    #         except ValueError:
-    #             continue
-    #         if request.session[tovar]['type'] == 1:
-    #             res.append((Motoroils.objects.get(pk=pr).oilvolume.get(motoroilsvolumsVolums=float(request.session[tovar]['value'])),request.session[tovar]['count']))
-    #         else:
-    #             pass
-    #     print(request.session.keys(),1111)
-    #     print(res)
-    #     return res
-
-
-# Create your views here.
 
 def startpage(request):
     category = Category.objects.values_list('categoryName', flat=True)
@@ -199,7 +211,6 @@ def pagecategory(request, category):
                     books = books.filter(booksGenre__genreName__in=request.POST.getlist('genre'))
                 except NameError:
                     books = Books.objects.filter(booksGenre__genreName__in=request.POST.getlist('genre'))
-                print(books.count(), 7777777)
 
             if request.POST.getlist('MIN') and request.POST.getlist('MAX'):
                 filter['MIN'] = int(request.POST.get('MIN')) if request.POST.get('MIN', None) else False
@@ -224,7 +235,6 @@ def pagecategory(request, category):
         countorders = 6
         if filter['res']:
             countorders = 100
-            print(100)
         pagbook = Paginator(books, countorders)
         pageNum = request.GET.get('page')
         if pageNum:
@@ -362,10 +372,8 @@ def pageoilproducer(request, pk):
             filter['MIN'] = int(request.POST.get('MIN')) if request.POST.get('MIN', None) else False
             min = int(request.POST.get('MIN')) if request.POST.get('MIN', None) else 0
             max = int(request.POST.get('MAX')) if request.POST.get('MAX', None) else 100000000000000000
-            print(request.POST.getlist('volum', None), 777)
             if request.POST.get('volum', None):
                 filter['volum'] = request.POST.getlist('volum')
-                print(request.POST.getlist('volum', None), 777)
                 oils = oils.filter(
                     Q(oilvolume__motoroilsvolumsPrice__lte=max) &
                     Q(oilvolume__motoroilsvolumsPrice__gte=min) &
@@ -606,7 +614,6 @@ def test(request):
 
 def oiladd(request, pk, pr):
     cart = Cart(request)
-    print(request.session['cart'], 'valuesssssssssss')
     cart.add(
         product=pr,
         value=request.GET['val'],
@@ -627,7 +634,7 @@ def deletemycartitem(request, pk, val):
 
 
 def cartclear(request):
-    cart=Cart(request)
+    cart = Cart(request)
     cart.clear()
     return redirect('/cart/')
 
@@ -640,3 +647,44 @@ def mycart(request):
         'cats': cats,
     }
     return render(request, 'cart.html', param)
+
+
+def buy(request):
+    cart = Cart(request)
+    if request.method == "POST" and request.user.is_authenticated:
+        form = OrderComForm(data=request.POST)
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.buyClient_id = request.user.pk
+            form.save()
+            createOrder(form, cart)
+            cart.clear()
+            messages.success(request, 'Order completed. You can see your status on your profile.')
+            return redirect('/')
+    cats = Category.objects.all()
+    form = OrderComForm()
+    user = User.objects.get(pk=request.user.pk).client
+    if user.clientName and user.clientCountry and user.clientAddress and user.clientSecondname:
+        check = True
+    else:
+        check = False
+    param = {
+        'form': form,
+        'cats': cats,
+        'check': check,
+        'user': user,
+        'carts': cart,
+    }
+    return render(request, 'buy.html', param)
+
+def buyitem(request):
+    if request.method == "GET" and request.user.is_authenticated:
+        cart = Cart(request)
+        if request.GET:
+            cart.add(product=request.GET['pr'], value=request.GET['value'])
+            cart.save()
+    return redirect('/cart/buy/')
+
+def myclear(request):
+    Cart(request).clear()
+    return HttpResponse('clear')
