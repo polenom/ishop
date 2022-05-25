@@ -597,12 +597,23 @@ def profile(request, name):
                     cform.clientCountry = county
                 cform.save()
         cform = ClientForm(instance=clien)
-
+        res = []
+        for i in clien.buy.filter(buystep__buystepDatefinish__isnull=True).distinct():
+            x = {'status':i.buystep.get(Q(buystepDatestart__isnull=False)&Q(buystepDatefinish__isnull=True)).buystepStep.stepName
+                        , 'product':[]}
+            for i1 in  i.buyproduct.all():
+                if i1.buyproductValue == '-1':
+                    x['product'].append(i1.buyproductProduct.books.booksTitle)
+                else:
+                    x['product'].append(i1.buyproductProduct.motoroils.motoroilsTitle)
+            res.append(x)
+        print(res)
         param = {
             'cats': cats,
             'client': clien,
             'cform': cform,
             'cart': cart,
+            'order': res,
         }
 
     return render(request, 'profile.html', param)

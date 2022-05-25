@@ -48,7 +48,7 @@ class Client(models.Model):
 
 
 class Buy(models.Model):
-    buyClient = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='buy', verbose_name='client')
+    buyClient = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='buy', verbose_name='buy')
     buyDescription = models.CharField(max_length=50, default='')
 
     def __str__(self):
@@ -63,7 +63,7 @@ class Step(models.Model):
 
 
 class Buy_step(models.Model):
-    buystepBuy = models.ForeignKey(Buy, models.CASCADE, verbose_name='number order')
+    buystepBuy = models.ForeignKey(Buy, models.CASCADE, verbose_name='number order', related_name='buystep')
     buystepStep = models.ForeignKey(Step, models.SET_NULL, null=True, verbose_name='step')
     buystepDatestart = models.DateTimeField(null=True, blank=True)
     buystepDatefinish = models.DateTimeField(null=True, blank=True)
