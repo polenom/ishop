@@ -340,7 +340,7 @@
                                   <div class="d-flex justify-content-between align-items-center">
                                     <div class="btn-group">
                                       <button type="button" class="btn btn-sm btn-outline-secondary"><a href="{% url 'book' genr=book.booksGenre.pk boo=book.pk %}">View</a></button>
-                                      <button type="button" class="btn btn-sm btn-outline-secondary">Buy</button>
+                                      <button type="button" class="btn btn-sm btn-outline-secondary"><a href="{% url 'buyitem' %}?value=-1&pr={{book.pk}}" class="primary">Buy</a></button>
                                     </div>
                                     <small class="text-muted">price: {{book.booksPrice}}</small>
                                   </div>

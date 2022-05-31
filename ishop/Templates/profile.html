@@ -82,7 +82,7 @@
                         Delete
                       </label>
                     </div>
-                    <div class="col-md-12"><label class="labels">Email</label>{{cform.clientEmail}}</div>
+                    <div class="col-md-12"><label class="labels">Email  {% if not user.checkemail.status and user.email %}<a href="" class="">verification</a>{% endif %}</label>{{cform.clientEmail}}</div>
                     <div class="col-md-12"><label class="labels">Address</label>{{cform.clientAddress}}</div>
                     <div class="col-md-12"><label class="labels">Country</label><input type="text" name='country' class="form-control" placeholder="Country" value="{% if client.clientCountry %}{{client.clientCountry.cityName}}{% endif %}"></div>
                 </div>
@@ -92,7 +92,7 @@
         </div>
         <div class="col-md-4">
             <div class="p-3 py-5">
-                <div class="d-flex justify-content-between align-items-center experience"><span>Buy</span><span class="border px-3 p-1 add-experience"><i class="fa fa-plus"></i>&nbsp;Experience</span></div><br>
+                <div class="d-flex justify-content-between align-items-center experience"><span>Buy</span><span class="border px-3 p-1 add-experience"><i class="fa fa-plus"></i> <a href="{% url 'logout' %}">Logout</a></span></div><br>
                 {% for items in order%}
                     {% for item in items.product %}
                     <div class="col-md-12">

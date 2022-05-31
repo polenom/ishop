@@ -252,3 +252,9 @@ class LikesBooks(models.Model):
 class StatusCommentsBlock(models.Model):
     statuscomments = models.ForeignKey(Books, on_delete=models.CASCADE, related_name='statuscommentsblock')
     statuscommentsBlock = models.ForeignKey(User, on_delete=models.CASCADE, related_name='statuscommentblock')
+
+class CheckEmail(models.Model):
+    client=models.OneToOneField(User, on_delete=models.CASCADE, related_name='checkemail', primary_key=True)
+    status = models.BooleanField(default=False)
+    password = models.IntegerField(null=True, blank=True)
+    datetime = models.DateTimeField(null=True, blank=True)

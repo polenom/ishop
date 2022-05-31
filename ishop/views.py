@@ -3,20 +3,18 @@ import urllib
 from datetime import datetime, timezone
 from operator import attrgetter
 from urllib.request import urlretrieve
-
-import pytz as pytz
-import requests
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import render, HttpResponse, redirect
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
-    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook
+    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook, CheckEmail
 from django.db.models import Q, Count
 from itertools import chain
 from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm, CountForm, OrderComForm
+from .tasks import send_spam_email
 
 
 def CreateAvatar(model, name):
@@ -274,7 +272,7 @@ def pagecategory(request, category):
                 filter['search'] = request.POST.get('search')
             if request.POST.get('oil', None):
                 filter['oil'] = request.POST.getlist('oil')
-
+                filter['trueoil'] = True
                 if oils != False:
                     oils = oils.filter(motoroilsProducer__oilproducer__in=request.POST.getlist('oil')).distinct()
                 else:
@@ -571,18 +569,25 @@ def profile(request, name):
             if not clien.clientEmail:
                 clien.clientEmail = user.email
                 clien.save()
+            user.checkemail
+        except User.checkemail.RelatedObjectDoesNotExist:
+            CheckEmail.objects.create(
+                client=user
+            )
         except User.client.RelatedObjectDoesNotExist:
             clien = Client.objects.create(
                 clientUser=user,
                 slug=user.username,
             )
             CreateAvatar(clien, name)
+            CheckEmail.objects.create(
+                client=user
+            )
             if user.email:
                 clien.clientEmail = user.email
             clien.save()
         if request.method == 'POST':
             cform = ClientForm(request.POST, request.FILES, instance=clien)
-
             if cform.is_valid():
                 cform = cform.save(commit=False)
                 if request.POST.get('clientPhoto-clear'):
@@ -596,6 +601,9 @@ def profile(request, name):
                         county = City.objects.create(cityName=request.POST.get('country'))
                     cform.clientCountry = county
                 cform.save()
+                if cform.clientEmail:
+                    user.email = cform.clientEmail
+                    user.save()
         cform = ClientForm(instance=clien)
         res = []
         for i in clien.buy.filter(buystep__buystepDatefinish__isnull=True).distinct():
@@ -670,6 +678,7 @@ def buy(request):
             form.save()
             createOrder(form, cart)
             cart.clear()
+            send_spam_email.delay(request.user.email)
             messages.success(request, 'Order completed. You can see your status on your profile.')
             return redirect('/')
     cats = Category.objects.all()
@@ -698,4 +707,9 @@ def buyitem(request):
 
 def myclear(request):
     Cart(request).clear()
+    send_spam_email.delay('vitalimitsevich@yandex.by')
     return HttpResponse('clear')
+
+def logoutuser(request):
+    logout(request)
+    return redirect('/')
