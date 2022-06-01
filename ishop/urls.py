@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from .views import test, startpage, pagecategory, loginPage, registerPage, pagegenre, book, removecomment, profile, \
-    pageoilproducer, oil, oiladd, mycart, deletemycartitem, cartclear, buy, myclear, buyitem,logoutuser
+    pageoilproducer, oil, oiladd, mycart, deletemycartitem, cartclear, buy, myclear, buyitem,logoutuser,checkemail
 
 urlpatterns = [
     path('', startpage),
@@ -21,5 +21,6 @@ urlpatterns = [
     path('cart/buy/', buy, name='buy'),
     path('clear/', myclear),
     path('buy/add', buyitem, name='buyitem' ),
-    path('logout/', logoutuser, name='logout')
+    path('logout/', logoutuser, name='logout'),
+    path('profile/email/check/', checkemail, name='checkemail')
 ]

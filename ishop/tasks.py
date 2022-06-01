@@ -1,5 +1,5 @@
 from core.selery import app
-from .service import send
+from .service import send, send_6code_to_email
 
 @app.task
 def send_spam_email(userEmail):
@@ -7,5 +7,5 @@ def send_spam_email(userEmail):
 
 
 @app.task
-def create_user_profile(username):
-    return 123
+def send_6code(username):
+    send_6code_to_email(username)

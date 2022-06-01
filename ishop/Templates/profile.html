@@ -58,6 +58,14 @@
         </div>
     </nav>
     <div class="container rounded bg-white mt-5 mb-5">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-succes alert-dismissible fade show" role="alert">
+                  <strong>Alert</strong> {{message}}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
     <div class="row">
         <div class="col-md-3 border-right">
             <div class="d-flex flex-column align-items-center text-center p-3 py-5"><img class="rounded-circle mt-5" width="150px" src="/{{client.clientPhoto}}"><span class="font-weight-bold">{{client.clientUser.username}}</span><span class="text-black-50">email: {{client.clientEmail}}</span><span> </span></div>
@@ -82,7 +90,7 @@
                         Delete
                       </label>
                     </div>
-                    <div class="col-md-12"><label class="labels">Email  {% if not user.checkemail.status and user.email %}<a href="" class="">verification</a>{% endif %}</label>{{cform.clientEmail}}</div>
+                    <div class="col-md-12"><label class="labels">Email  {% if not user.checkemail.status and user.email %}<a href="{% url 'checkemail' %}" class="">verification</a>{% endif %}</label>{{cform.clientEmail}}</div>
                     <div class="col-md-12"><label class="labels">Address</label>{{cform.clientAddress}}</div>
                     <div class="col-md-12"><label class="labels">Country</label><input type="text" name='country' class="form-control" placeholder="Country" value="{% if client.clientCountry %}{{client.clientCountry.cityName}}{% endif %}"></div>
                 </div>

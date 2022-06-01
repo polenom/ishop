@@ -1,6 +1,6 @@
 import os
 import urllib
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from operator import attrgetter
 from urllib.request import urlretrieve
 from django.contrib import messages
@@ -8,13 +8,13 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.paginator import Paginator, PageNotAnInteger
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
     Oilproducer, Motoroils, Motoroilsvolums, Commentsbook, CheckEmail
 from django.db.models import Q, Count
 from itertools import chain
 from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm, CountForm, OrderComForm
-from .tasks import send_spam_email
+from .tasks import send_spam_email, send_6code
 
 
 def CreateAvatar(model, name):
@@ -601,6 +601,11 @@ def profile(request, name):
                         county = City.objects.create(cityName=request.POST.get('country'))
                     cform.clientCountry = county
                 cform.save()
+                print(request.POST)
+                if request.POST.get('clientEmail'):
+                    status = user.checkemail
+                    status.status = False
+                    status.save()
                 if cform.clientEmail:
                     user.email = cform.clientEmail
                     user.save()
@@ -707,9 +712,31 @@ def buyitem(request):
 
 def myclear(request):
     Cart(request).clear()
-    send_spam_email.delay('vitalimitsevich@yandex.by')
+
     return HttpResponse('clear')
 
 def logoutuser(request):
     logout(request)
     return redirect('/')
+
+def checkemail(request):
+    if request.user.is_authenticated  and User.objects.get(pk=request.user.pk).checkemail:
+        if request.method == "POST":
+            try:
+                code = int(request.POST['code'])
+            except ValueError:
+                messages.warning(request, 'Only numbers required')
+                return render(request, 'checkemail.html', {})
+            user = User.objects.get(pk=request.user.pk).checkemail
+            dtime =  (datetime.now(timezone.utc) + timedelta(seconds=10800)) - user.datetime
+            if code == user.password and 120 > dtime.seconds :
+                print('code')
+                user.password = None
+                user.status = True
+                user.datetime = None
+                user.save()
+                messages.success(request, 'You have verified your email')
+                return redirect(f'/profile/{request.user.username}')
+            return render(request, 'checkemail.html', {})
+        send_6code.delay(request.user.username)
+        return render(request, 'checkemail.html', {})
