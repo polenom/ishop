@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from .views import test, startpage, pagecategory, loginPage, registerPage, pagegenre, book, removecomment, profile, \
-    pageoilproducer, oil, oiladd, mycart, deletemycartitem, cartclear, buy, myclear, buyitem,logoutuser,checkemail
+    pageoilproducer, oil, oiladd, mycart, deletemycartitem, cartclear, buy, myclear, buyitem,logoutuser,checkemail, reply
 
 urlpatterns = [
     path('', startpage),
@@ -10,7 +10,7 @@ urlpatterns = [
     path('login/', loginPage, name='login'),
     path('register/', registerPage, name='register'),
     path('category/books/<int:genr>/<int:boo>/', book, name='book'),
-    path('category/books/<int:genr>/<int:boo>/<int:comm>/remove/', removecomment, name='removecomment'),
+    path('category/<slug:name>/<int:genr>/<int:boo>/<int:comm>/remove/', removecomment, name='removecomment'),
     path('profile/<slug:name>', profile, name='profile'),
     path('category/oils/<int:pk>/', pageoilproducer, name='oilproducer'),
     path('category/oils/<int:pk>/<int:pr>/', oil, name='oil'),
@@ -22,5 +22,6 @@ urlpatterns = [
     path('clear/', myclear),
     path('buy/add', buyitem, name='buyitem' ),
     path('logout/', logoutuser, name='logout'),
-    path('profile/email/check/', checkemail, name='checkemail')
+    path('profile/email/check/', checkemail, name='checkemail'),
+    path('category/<slug:category>/<int:pk>/<int:pkcom>/reply', reply, name='reply' )
 ]

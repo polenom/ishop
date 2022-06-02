@@ -10,7 +10,7 @@ from django.core.files import File
 from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
-    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook, CheckEmail
+    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook, CheckEmail, Commentsoil
 from django.db.models import Q, Count
 from itertools import chain
 from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm, CountForm, OrderComForm
@@ -73,7 +73,6 @@ class Cart:
             price = Motoroils.objects.get(pk=product).oilvolume.get(motoroilsvolumsVolums=value)
 
             if price.motoroilsvolumsPrice:
-
                 self.cart[str(product) + ' ' + value] = {'value': value, 'count': count,
                                                          'price': price.motoroilsvolumsPrice}
         else:
@@ -81,7 +80,6 @@ class Cart:
             if price.booksPrice:
                 self.cart[str(product) + ' ' + value] = {'value': value, 'count': count,
                                                          'price': price.booksPrice}
-
 
     def delete(self, product, value):
         del self.cart[str(product) + ' ' + value]
@@ -103,11 +101,12 @@ class Cart:
 
     def __iter__(self):
         for prod in self.cart.keys():
-            print(prod,22222222222222222222222)
+            print(prod, 22222222222222222222222)
             self.cart[prod]['summa'] = str(round(self.cart[prod]['price'] * int(self.cart[prod]['count']), 2))
             if prod.split(' ')[-1] != '-1':
-                self.cart[prod]['product'] = Motoroils.objects.get(pk=prod.split(' ')[0]).oilvolume.get(motoroilsvolumsVolums=prod.split(' ')[1])
-                print( self.cart[prod]['product'])
+                self.cart[prod]['product'] = Motoroils.objects.get(pk=prod.split(' ')[0]).oilvolume.get(
+                    motoroilsvolumsVolums=prod.split(' ')[1])
+                print(self.cart[prod]['product'])
                 yield self.cart[prod]
             else:
                 self.cart[prod]['product'] = Books.objects.get(pk=prod.split(' ')[0])
@@ -546,15 +545,21 @@ def book(request, genr, boo):
     return render(request, 'book.html', param)
 
 
-def removecomment(request, genr, boo, comm):
+def removecomment(request, genr, boo, comm, name):
     if request.user.is_authenticated and request.user.is_staff:
+        print(request.user.is_staff, 123)
         try:
-            comment = Books.objects.get(pk=boo).comment.get(pk=comm)
+            prod = get_object_or_404(Product, pk=boo)
+
+            if 'books' == prod.product.categoryName:
+                comment = Books.objects.get(pk=boo).comment.get(pk=comm)
+            else:
+                comment = Motoroils.objects.get(pk=boo).commentOil.get(pk=comm)
             comment.delete()
             messages.success(request, 'Comment has been removed')
-        except (Commentsbook.DoesNotExist, Books.DoesNotExist):
+        except (Commentsbook.DoesNotExist, Books.DoesNotExist, Commentsoil.DoesNotExist, Motoroils.DoesNotExist):
             messages.warning(request, "Can't delete comment")
-        return redirect(f'/category/books/{genr}/{boo}')
+        return redirect(f'/category/{name}/{genr}/{boo}')
 
 
 def profile(request, name):
@@ -612,9 +617,10 @@ def profile(request, name):
         cform = ClientForm(instance=clien)
         res = []
         for i in clien.buy.filter(buystep__buystepDatefinish__isnull=True).distinct():
-            x = {'status':i.buystep.get(Q(buystepDatestart__isnull=False)&Q(buystepDatefinish__isnull=True)).buystepStep.stepName
-                        , 'product':[]}
-            for i1 in  i.buyproduct.all():
+            x = {'status': i.buystep.get(
+                Q(buystepDatestart__isnull=False) & Q(buystepDatefinish__isnull=True)).buystepStep.stepName
+                , 'product': []}
+            for i1 in i.buyproduct.all():
                 if i1.buyproductValue == '-1':
                     x['product'].append(i1.buyproductProduct.books.booksTitle)
                 else:
@@ -702,6 +708,7 @@ def buy(request):
     }
     return render(request, 'buy.html', param)
 
+
 def buyitem(request):
     if request.method == "GET" and request.user.is_authenticated:
         cart = Cart(request)
@@ -710,17 +717,20 @@ def buyitem(request):
             cart.save()
     return redirect('/cart/buy/')
 
+
 def myclear(request):
     Cart(request).clear()
 
     return HttpResponse('clear')
 
+
 def logoutuser(request):
     logout(request)
     return redirect('/')
 
+
 def checkemail(request):
-    if request.user.is_authenticated  and User.objects.get(pk=request.user.pk).checkemail:
+    if request.user.is_authenticated and User.objects.get(pk=request.user.pk).checkemail:
         if request.method == "POST":
             try:
                 code = int(request.POST['code'])
@@ -728,9 +738,8 @@ def checkemail(request):
                 messages.warning(request, 'Only numbers required')
                 return render(request, 'checkemail.html', {})
             user = User.objects.get(pk=request.user.pk).checkemail
-            dtime =  (datetime.now(timezone.utc) + timedelta(seconds=10800)) - user.datetime
-            if code == user.password and 120 > dtime.seconds :
-                print('code')
+            dtime = (datetime.now(timezone.utc) + timedelta(seconds=10800)) - user.datetime
+            if code == user.password and 120 > dtime.seconds:
                 user.password = None
                 user.status = True
                 user.datetime = None
@@ -740,3 +749,7 @@ def checkemail(request):
             return render(request, 'checkemail.html', {})
         send_6code.delay(request.user.username)
         return render(request, 'checkemail.html', {})
+
+
+def reply(request, category, pk, pkcom):
+    print(request.path)

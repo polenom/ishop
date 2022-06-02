@@ -39,7 +39,7 @@
             {% if request.user.is_authenticated %}
                 <ul class="navbar-nav  mb-2 mb-lg-0">
                 <li class="nav-item">
-                  <a class="nav-link active" aria-current="page" href="{% url 'login' %}">{{request.user.username}}</a>
+                  <a class="nav-link active" aria-current="page" href="{% url 'profile' request.user.username %}">{{request.user.username}}</a>
                 </li>
             </ul>
             {% else %}
@@ -119,7 +119,7 @@
                       </div>
                       <div class="action d-flex justify-content-between mt-2 align-items-center">
                         <div class="reply px-4">
-                            {%if request.user.is_authenticated and request.user.is_staff %}<small> <a href="{% url 'removecomment' genr=book.booksGenre.pk boo=book.pk comm=comment.pk %}">Remove</a></small>{% endif %}
+                            {%if request.user.is_authenticated and request.user.is_staff %}<small> <a href="{% url 'removecomment' name='books' genr=book.booksGenre.pk boo=book.pk comm=comment.pk %}">Remove</a></small>{% endif %}
                         </div>
                         <div class="icons align-items-center">
                             <i class="fa fa-star text-warning"></i>
