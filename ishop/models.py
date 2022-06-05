@@ -243,6 +243,36 @@ class Commentsoil(models.Model):
         else:
             return str(time.seconds//60) + ' minutes ago'
 
+class ReplyComOil(models.Model):
+    commentMain = models.ForeignKey(Commentsoil,on_delete=models.CASCADE, related_name='replyoil')
+    replyUser = models.ForeignKey(User, on_delete=models.CASCADE, related_name='replyoil')
+    text = models.CharField(max_length=300)
+    date = models.DateTimeField(auto_now=True)
+
+    def timebefore(self):
+        time = datetime.now(timezone.utc) - self.date
+        if time.days:
+            return str(time.days)+' days ago'
+        elif time.seconds//3600:
+            return str(time.seconds//3600+1)+' hours ago'
+        else:
+            return str(time.seconds//60) + ' minutes ago'
+
+
+class ReplyReplyComOil(models.Model):
+    commentMain = models.ForeignKey(ReplyComOil,on_delete=models.CASCADE, related_name='replyreplyoil')
+    replyUser = models.ForeignKey(User, on_delete=models.CASCADE, related_name='replyreplyoil')
+    text = models.CharField(max_length=300)
+    date = models.DateTimeField(auto_now=True)
+
+    def timebefore(self):
+        time = datetime.now(timezone.utc) - self.date
+        if time.days:
+            return str(time.days)+' days ago'
+        elif time.seconds//3600:
+            return str(time.seconds//3600+1)+' hours ago'
+        else:
+            return str(time.seconds//60) + ' minutes ago'
 
 class LikesBooks(models.Model):
     likesbooksBooks = models.ForeignKey(Books, on_delete=models.CASCADE, related_name='likesbook')

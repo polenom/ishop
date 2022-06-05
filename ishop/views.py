@@ -10,7 +10,7 @@ from django.core.files import File
 from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
-    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook, CheckEmail, Commentsoil
+    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook, CheckEmail, Commentsoil, ReplyComOil, ReplyReplyComOil
 from django.db.models import Q, Count
 from itertools import chain
 from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm, CountForm, OrderComForm
@@ -752,4 +752,72 @@ def checkemail(request):
 
 
 def reply(request, category, pk, pkcom):
-    print(request.path)
+    if request.user.is_authenticated and request.method == 'POST':
+        if category == 'oils' and request.POST.get('text'):
+            com = Commentsoil.objects.get(pk=pkcom)
+            ReplyComOil.objects.create(
+                commentMain=com,
+                replyUser_id=request.user.pk,
+                text=request.POST.get('text'),
+            )
+            Motoroils
+            return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
+
+
+def rreply(request, category, pk, pkcom,rpkcom):
+    if request.user.is_authenticated and request.method == 'POST':
+        if category == 'oils' and request.POST.get('text'):
+            com = Commentsoil.objects.get(pk=pkcom).replyoil.get(pk=rpkcom)
+            ReplyReplyComOil.objects.create(
+                commentMain_id=rpkcom,
+                replyUser_id=request.user.pk,
+                text=request.POST.get('text'),
+            )
+            return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
+
+def removereply(request, category, pk, pkcom):
+    if request.user.is_authenticated and request.method == 'POST':
+        if category == 'oils' and request.POST.get('text'):
+            com = Commentsoil.objects.get(pk=pkcom)
+            ReplyComOil.objects.create(
+                commentMain=com,
+                replyUser_id=request.user.pk,
+                text=request.POST.get('text'),
+            )
+            Motoroils
+            return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
+
+
+def removerreply(request, category, pk, rrpkcom):
+    if request.user.is_authenticated:
+        rreply = get_object_or_404(ReplyReplyComOil, pk=rrpkcom)
+        if (category == 'oils' and rreply.replyUser.pk == request.user.pk) or request.user.is_staff:
+            rreply.delete()
+    return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
+
+
+# class SortComment:
+#     def __init__(self, pk, category):
+#         if category == 'books':
+#             self.product = Books.objects.filter(pk=pk)
+#         else:
+#             self.product = Motoroils.objects.filter(pk=pk)
+#         if self.product:
+#             self.product = self.product[0]
+#         self.category = category
+#     def __len__(self):
+#         return len(self.product)
+#
+#     def __iter__(self):
+#         if self.category == 'oils':
+#             for comment in self.product.commentOil:
+#
+#
+#     def time_before(self, time):
+#         time = datetime.now(timezone.utc) - time
+#         if time.days:
+#             return str(time.days) + ' days ago'
+#         elif time.seconds // 3600:
+#             return str(time.seconds // 3600 + 1) + ' hours ago'
+#         else:
+#             return str(time.seconds // 60) + ' minutes ago'

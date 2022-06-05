@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
-from ishop.models import Commentsbook, Client, Commentsoil, Buy
+from ishop.models import Commentsbook, Client, Commentsoil, Buy, ReplyComOil
 
 
 class UserRegForm(UserCreationForm):
@@ -36,6 +36,12 @@ class CommOilForm(forms.ModelForm):
     class Meta:
         model = Commentsoil
         fields = ('comoilText',)
+
+
+class CommOilReplyForm(forms.ModelForm):
+    class Meta:
+        model = ReplyComOil
+        fields = ('text',)
 
 
 class CountForm(forms.Form):
