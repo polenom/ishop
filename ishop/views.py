@@ -10,7 +10,8 @@ from django.core.files import File
 from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from .models import City, Client, Buy, Step, Buy_step, Category, Product, Buy_product, Author, Genre, Books, \
-    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook, CheckEmail, Commentsoil, ReplyComOil, ReplyReplyComOil
+    Oilproducer, Motoroils, Motoroilsvolums, Commentsbook, CheckEmail, Commentsoil, ReplyComOil, ReplyReplyComOil, \
+    ReplyComBooks, ReplyReplyComBooks
 from django.db.models import Q, Count
 from itertools import chain
 from .form import UserRegForm, UserAuthForm, CommBookForm, ClientForm, CommOilForm, CountForm, OrderComForm
@@ -547,7 +548,6 @@ def book(request, genr, boo):
 
 def removecomment(request, genr, boo, comm, name):
     if request.user.is_authenticated and request.user.is_staff:
-        print(request.user.is_staff, 123)
         try:
             prod = get_object_or_404(Product, pk=boo)
 
@@ -760,9 +760,15 @@ def reply(request, category, pk, pkcom):
                 replyUser_id=request.user.pk,
                 text=request.POST.get('text'),
             )
-            Motoroils
             return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
-
+        elif category == 'books' and request.POST.get('text'):
+            com = Commentsbook.objects.get(pk=pkcom)
+            ReplyComBooks.objects.create(
+                commentMain=com,
+                replyUser_id=request.user.pk,
+                text=request.POST.get('text'),
+            )
+            return redirect(f'/category/books/{Books.objects.get(pk=pk).booksGenre.pk}/{pk}/')
 
 def rreply(request, category, pk, pkcom,rpkcom):
     if request.user.is_authenticated and request.method == 'POST':
@@ -774,26 +780,47 @@ def rreply(request, category, pk, pkcom,rpkcom):
                 text=request.POST.get('text'),
             )
             return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
-
-def removereply(request, category, pk, pkcom):
-    if request.user.is_authenticated and request.method == 'POST':
-        if category == 'oils' and request.POST.get('text'):
-            com = Commentsoil.objects.get(pk=pkcom)
-            ReplyComOil.objects.create(
+        elif category == 'books' and request.POST.get('text'):
+            print(category, pk, pkcom, rpkcom)
+            com = ReplyComBooks.objects.get(pk=rpkcom)
+            print(request.POST)
+            ReplyReplyComBooks.objects.create(
                 commentMain=com,
                 replyUser_id=request.user.pk,
                 text=request.POST.get('text'),
             )
-            Motoroils
-            return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
+            return redirect(f'/category/books/{Books.objects.get(pk=pk).booksGenre.pk}/{pk}/')
 
+def removereply(request, category, pk, pkcom):
+    if request.user.is_authenticated:
+        if category == 'oils':
+            reply = get_object_or_404(ReplyComOil, pk=pkcom)
+            if reply.replyUser.pk == request.user.pk or request.user.is_staff:
+                reply.delete()
+                messages.success(request, 'Comment has been removed')
+                return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
+        elif category == 'books':
+            reply = get_object_or_404(ReplyComBooks, pk=pkcom)
+            if reply.replyUser.pk == request.user.pk or request.user.is_staff:
+                reply.delete()
+                messages.success(request, 'Comment has been removed')
+                return redirect(f'/category/books/{Books.objects.get(pk=pk).booksGenre.pk}/{pk}/')
 
 def removerreply(request, category, pk, rrpkcom):
     if request.user.is_authenticated:
-        rreply = get_object_or_404(ReplyReplyComOil, pk=rrpkcom)
-        if (category == 'oils' and rreply.replyUser.pk == request.user.pk) or request.user.is_staff:
-            rreply.delete()
-    return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
+        if category == 'oils':
+            rreply = get_object_or_404(ReplyReplyComOil, pk=rrpkcom)
+            if  rreply.replyUser.pk == request.user.pk or request.user.is_staff:
+                rreply.delete()
+                messages.success(request, 'Comment has been removed')
+                return redirect(f'/category/oils/{Motoroils.objects.get(pk=pk).motoroilsProducer.pk}/{pk}/')
+        elif category == 'books':
+            rreply = get_object_or_404(ReplyReplyComBooks, pk=rrpkcom)
+            if rreply.replyUser.pk == request.user.pk or request.user.is_staff:
+                rreply.delete()
+                messages.success(request, 'Comment has been removed')
+                return redirect(f'/category/books/{Books.objects.get(pk=pk).booksGenre.pk}/{pk}/')
+
 
 
 # class SortComment:

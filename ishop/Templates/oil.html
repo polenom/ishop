@@ -171,7 +171,7 @@
                          <div class="action d-flex justify-content-between mt-2 align-items-center">
                             <div class="reply px-4">
                                 {%if request.user.is_authenticated and request.user.is_staff or comment.comoilUser.pk == request.user.pk %}<small> <a
-                                    href="{% url 'removecomment' name='oils' genr=oil.motoroilsProducer.pk boo=oil.pk comm=comment.pk %}">Remove</a></small>{% endif %}
+                                    href="{% url 'removereply' category='oils' pk=oil.pk pkcom=reply.pk %}">Remove</a></small>{% endif %}
                                 <span class="dots"></span>
                                 <small>
                                     <a class="link-secondary" data-bs-toggle="collapse"
