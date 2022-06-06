@@ -185,6 +185,7 @@ class Motoroils(models.Model):
     motoroilsTitle = models.CharField(max_length=200, default='')
     motoroilsDescription = models.CharField(max_length=200, default='')
     motoroilsSlug = models.SlugField(unique=True)
+    motoroilslikes = models.ManyToManyField(User, blank=True, related_name='oilslikes')
 
     def producer(self):
         return self.motoroilsProducer

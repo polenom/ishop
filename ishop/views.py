@@ -473,8 +473,19 @@ def pagegenre(request, pk):
 def oil(request, pk, pr):
     cats = Category.objects.all()
     oil = Motoroils.objects.get(pk=pr)
-
     if request.method == 'POST' and request.user.is_authenticated:
+        print(request.POST)
+        if 'like' in request.POST.keys():
+            product = get_object_or_404(Motoroils,pk=pr)
+            if not product.motoroilslikes.filter(pk=request.user.pk):
+                product.motoroilslikes.add(User.objects.get(pk=request.user.pk))
+                product.save()
+        elif 'dislike' in request.POST.keys():
+            product = get_object_or_404(Motoroils, pk=pr)
+            if product.motoroilslikes.filter(pk=request.user.pk):
+                print(123)
+                product.motoroilslikes.remove(User.objects.get(pk=request.user.pk))
+                product.save()
         form = CommOilForm(data=request.POST)
         if form.is_valid():
             formsave = form.save(commit=False)
@@ -496,7 +507,10 @@ def oil(request, pk, pr):
         get_page = pagbook.page(1)
     formadd = CountForm()
     cart = Cart(request)
-
+    likes = {
+        'count': Motoroils.objects.get(pk=213).motoroilslikes.count(),
+        'like': True if Motoroils.objects.get(pk=213).motoroilslikes.filter(pk=request.user.pk) else False,
+    }
     param = {
         'cats': cats,
         'oil': oil,
@@ -504,6 +518,7 @@ def oil(request, pk, pr):
         'formadd': formadd,
         'comments': get_page,
         'cart': cart,
+        'likes': likes,
     }
     return render(request, 'oil.html', param)
 
